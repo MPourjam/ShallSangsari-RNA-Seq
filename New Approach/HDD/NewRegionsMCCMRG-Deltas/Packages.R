@@ -44,4 +44,4 @@ if(!require("rmarkdown")){install.packages("rmarkdown")}
 if(!require("pryr")){install.packages("pryr")}
 if(!require("furrr")){install.packages("furrr")}
 if(!require("rstudioapi")){install.packages("rstudioapi")}
-if(!require("org.Oaries.eg.db")){BiocManager::install("org.Oaries.eg.db")}
+#if(!require("org.Oaries.eg.db")){BiocManager::install("org.Oaries.eg.db")}
