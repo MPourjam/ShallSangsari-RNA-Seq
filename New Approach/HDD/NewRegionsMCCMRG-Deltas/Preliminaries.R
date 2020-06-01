@@ -10,7 +10,7 @@ options(future.globals.onMissing= "ignore")
 ### Path
 cwd <- getwd()
 SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary
-fullCov_Path <- list.files(path = SavePath, pattern = "full(c|C)ov.(RData|rds)$", recursive = TRUE)
+fullCov_Path <- list.files(path = SavePath, pattern = "full(c|C)ov.(RData|rds)$", recursive = TRUE,full.names = TRUE)
 
 
 ### Variables
@@ -35,6 +35,9 @@ OarSeqinfo <- Seqinfo(seqnames = c(1:26, "X"),
 
 ReadLength <- c(rep(150,3), rep(100,2),rep(150, 4))
 
+Fecuntrt <- c(c(rep("LF",3), "HF",rep("LF",2), rep("HF",2),"LF"))
+Breedtrt <- c(c(rep("San",3), rep("Shall",6)))
+ThreeGroup <- c(rep("San", 3), rep("Shall_OUT",2), rep("Shall",3), "Shall_OUT")
 pheno <- as.data.frame( cbind(Breed = Breedtrt, Fecun = Fecuntrt,
  ThreeGroup = ThreeGroup, ReadLength = ReadLength))
 pheno <- map_dfc(colnames(pheno), ~ as.factor(pheno[,.]))
@@ -43,7 +46,8 @@ rownames(pheno) <- NULL
 
 Breeds <- c("Shall","San")
 
-bamfilespath <- list.files(path = paste0(SavePath,"DATA/Analyze/Out/Sheep/")
+bamfilespath <- list.files(path = paste0(SavePath,"DATA/Analyze/Out/Sheep/") #### Why do we need bamfilespath...
+                           ## in cwd might be anywhere pay attention to addess of bamfilespath
                            , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
                            , recursive = TRUE )
 
