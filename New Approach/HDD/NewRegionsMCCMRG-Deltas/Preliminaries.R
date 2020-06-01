@@ -18,7 +18,7 @@ MCC <- c(seq(1,20,0.5))
 MRG <- c(seq(10,100, 10))
 MCC_MRG_Grid <- expand.grid(MCC,MRG)
 if (length(fullCov_Path) == 1){
-if (str_detect(fullCov_Path,".*.rds$")){  ##########?????? Do we really need fullCov for this step
+if (str_detect(fullCov_Path,".*.rds$")){  ###### What if therea are more than one file containing "fullcov" and ".rds
   load(fullCov_Path)
 } else if(stringr::str_detect(fullCov_Path, ".*.RData")) {
   fullCov <<- load(fullCov_Path)
