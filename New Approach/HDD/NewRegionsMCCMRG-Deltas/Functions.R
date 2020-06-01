@@ -14,9 +14,9 @@ is.sequential <- function(vector, diff = 1){
 
 
 gaps_Grange <- function(regionMat_region_Grange){
-  gaps <- future_map(regionMat_region_Grange, ~ as.data.frame(gaps(.x))[-c(1,2)])
-  gaps <- future_map(gaps,~makeGRangesFromDataFrame(.x[.x$start > 1,], keep.extra.columns = TRUE ))
-  gaps <- future_map(gaps, ~ sort.GenomicRanges(.x))
+  gaps <- map(regionMat_region_Grange, ~ as.data.frame(gaps(.x))[-c(1,2)])
+  gaps <- map(gaps,~makeGRangesFromDataFrame(.x[.x$start > 1,], keep.extra.columns = TRUE ))
+  gaps <- map(gaps, ~ sort.GenomicRanges(.x))
   gaps
 }
 
@@ -39,45 +39,45 @@ NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta =
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
   RegionMat <- load(file = file.path(RegionMat_Path))
-  .subset2(MRG_RegionSet,1) <- future_map(RegionMat, ~ .subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
-  .subset2(MRG_RegionSet,2) <- future_map(.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
+  .subset2(MRG_RegionSet,1) <- map(RegionMat, ~ .subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
+  .subset2(MRG_RegionSet,2) <- map(.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
   
   
     gc()
 
 if (!file.exist(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character(MRG), sep = "_" ), ".RData" )) )) {
     ## Filtering gaps
-    gap_filtered <- future_map(.subset2(MRG_RegionSet,2), ~ .x[which(width(.x) <= as.integer(MRG)),])
+    gap_filtered <- map(.subset2(MRG_RegionSet,2), ~ .x[which(width(.x) <= as.integer(MRG)),])
 
     ## Finding receding regions
-    preceding_region <- future_map2(gap_filtered, .subset2(MRG_RegionSet,1), ~ tibble(Leader_Region = precede(..1, ..2 )) %>% drop_na() )
+    preceding_region <- map2(gap_filtered, .subset2(MRG_RegionSet,1), ~ tibble(Leader_Region = precede(..1, ..2 )) %>% drop_na() )
     # preceding_region is a list of 27(number of chromosomes) elements
 
     ### 
-    Leader_Follower_Index <- future_map(preceding_region, ~ tibble(LeaderIndex = is.sequential(.subset2(.x,1))) %>%
+    Leader_Follower_Index <- map(preceding_region, ~ tibble(LeaderIndex = is.sequential(.subset2(.x,1))) %>%
      mutate(FollowerIndex = dplyr::lag(LeaderIndex + 1, default = 1)) )  #??? What about the last one in preceding_region
 
     ### Retrieving corresponding regoins using indices from preceding regions vector (list of 27)
-    Leader_Follower_PrecedingRegion <- future_map2(preceding_region, Leader_Follower_Index,
+    Leader_Follower_PrecedingRegion <- map2(preceding_region, Leader_Follower_Index,
      ~tibble(LeaderRegion = ..1[.subset2(..2, 1)]+1 ), FollowerRegion = ..1[.subset2(..2,2)])
     names(Leader_Follower_PrecedingRegion) <- paste0("Chr", as.character(c(1:26,"X")))
 
     ### Constituting new regioins
-    New_Regions_Seqnames <- future_map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1),
+    New_Regions_Seqnames <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1),
      ~ seqnames(..2[.subset2(..1, 2),]))
-    New_Regions_Strand <- future_map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1),
+    New_Regions_Strand <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1),
       ~strand(..2[.subset2(..1, 2),]))
-    New_Regions_Ranges <- future_map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1), 
+    New_Regions_Ranges <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1), 
       ~IRanges(start = start(..2[[.subset2(..1, 2)]]), end = end(..2[.subset2(..1, 1),])))
     New_Regions_GRange <- pmap(New_Regions_Seqnames, New_Regions_Strand, New_Regions_Ranges,
       ~ GRanges(seqnames = ..1, ranges = ..3, strand = ..2))
 
     ### Removing compiled regions from the list of regions
-  excluding_regions_allChrs <- future_map(Leader_Follower_PrecedingRegion, ~ exclude_compiled_regions)
+  excluding_regions_allChrs <- map(Leader_Follower_PrecedingRegion, ~ exclude_compiled_regions)
 
-  compiled_regions_excluded_tibble <- future_map2(.subset2(MRG_RegionSet,1) , excluding_regions_allChrs,
+  compiled_regions_excluded_tibble <- map2(.subset2(MRG_RegionSet,1) , excluding_regions_allChrs,
    ~ as_tibble(..1[-c(..2),c("seqnames","ranges","strand")])) ### Might incur problems due to nature of regions as a Grange (not subsettable)
-  RegionMat_MCC_MRG <- future_map2(compiled_regions_excluded_tibble, New_Regions_GRange, ### fitering for regions longer than 3 to exclude microexons
+  RegionMat_MCC_MRG <- map2(compiled_regions_excluded_tibble, New_Regions_GRange, ### fitering for regions longer than 3 to exclude microexons
    ~ list(regions = sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ) %>% 'Seqinfo<-'(OarSeqinfo)), #### Retrieving regionCoverage for 
     bpCoverage = getRegionCoverage(fullCov, sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ))) ) )
   #### Doing all at once may put such a heavy burden on the RAM (pay attention to above)
@@ -112,30 +112,30 @@ if (CalclulateDelta){
       names(Deltas) <- as.character(Deltas_names[["MCC_MRG"]])
 
       ## Filtering for regions loonger than 3bp-long has been done on line 80 (RegionMat_MCC_MRG)
-      LaidPairs <- future_map(seq_len(length(NonOverlappedExons)),
+      LaidPairs <- map(seq_len(length(NonOverlappedExons)),
         ~findOverlapPairs(granges(RegionMat_MCC_MRG[[.x]][['regions']]),
           granges(NonOverlappedExons[[.x]])), .id = "Chr")
       ### Filtering Er's laid on multiple Exons
-      Ers_Laid_One_Exon <- future_map(LaidPairs,~ unite(data.frame(.x@first), col = "Region", sep="-", remove = TRUE) %>% table() %>% as_tibble() %>%
+      Ers_Laid_One_Exon <- map(LaidPairs,~ unite(data.frame(.x@first), col = "Region", sep="-", remove = TRUE) %>% table() %>% as_tibble() %>%
           dplyr::filter(n == 1) %>% tidyr::separate(col = ".", into = c("seqnames", "start", "end", "width", "strand"),sep = "-", remove = TRUE) %>% dplyr::select(-c(n)) )
      Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "seqnames", as.factor(.x[[1]]) ))
      Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "start", as.integer(.x[["start"]]) ))
      Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "end", as.integer(.x[["end"]]) ))
      Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "width", as.integer(.x[["width"]]) ))
      Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "strand", as.factor(.x[["strand"]]) ))
-      
-      LaidPairs <- future_map2(LaidPairs, Ers_Laid_One_Exon, ~ dplyr::semi_join(x = as_tibble(..1@first), y = ..2))
-      ############################################### Yet to be done ####################################################
-      ### We need to prune the ERs laying on multiple exons.Temporarily, we omit these steps due to uncertainty regarding
-      ###  applying width() function on a output of findOverlapPairs().
-      ###################################################################################################################
+     names(Ers_Laid_One_Exon) <- OarSeqinfo@seqnames 
+     gc()
+     LaidPairs <- map(seq_len(length(NonOverlappedExons)),
+        ~findOverlapPairs(granges(Ers_Laid_One_Exon[[.x]]), granges(NonOverlappedExons[[.x]])), .id = "Chr")
+     gc()
+     
       Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <-
      # %>% transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
       
       save(Deltas, file = Deltas_file_path)
     } else {
       load(Deltas_file_path)
-      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- future_map_dfr(seq_len(length(NonOverlappedExons)),
+      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(seq_len(length(NonOverlappedExons)),
        ~as_tibble(findOverlapPairs(ranges(NonOverlappedExons[[..1]]), # We may need to change the query and subject 
         ranges(RegionMat_MCC_MRG[[..1]][['regions']]))), .id = "Chr") %>% 
       transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
