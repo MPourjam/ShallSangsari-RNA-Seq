@@ -92,6 +92,7 @@ save(RegionMat_MCC_MRG,
 MCC <- as.numeric(stringr::str_remove(stringr::str_extract(string = basename(RegionMat_Path),
  pattern = "[^[[:alpha:]]]+"), ".$"))
 
+ ### Calcualting Deltas
 if (CalclulateDelta){
   if (!c("NonOverlappedExons") %in% ls() ){
   warning(paste0("NonOverlappedExons was not loaded trying to load it from the", as.character(DBDir_Path),"!"),
@@ -110,15 +111,20 @@ if (CalclulateDelta){
       Deltas <- vector(mode = "list", length = nrow(MCC_MRG_Grid))
       names(Deltas) <- as.character(Deltas_names[["MCC_MRG"]])
 
-      ## Filtering for regions loonger than 3bp-long has been done on line 80
+      ## Filtering for regions loonger than 3bp-long has been done on line 80 (RegionMat_MCC_MRG)
       LaidPairs <- future_map(seq_len(length(NonOverlappedExons)),
         ~findOverlapPairs(granges(RegionMat_MCC_MRG[[.x]][['regions']]),
           granges(NonOverlappedExons[[.x]])), .id = "Chr")
       ### Filtering Er's laid on multiple Exons
-      Ers_without_multi_Exons_Index <- future_map(LaidPairs,~ unite(data.frame(.x@first), col = "Region", sep="-", remove = TRUE]) %>%
-       table() %>% as_tibble() %>% dplyr::filter(n == 1) %>% dplyr::separate(col = "Region",
-        into = c("seqnames", "start", "end", "width", "strand"),sep = "-", remove = TRUE) %>% see####################
-      LaidPairs <- future_map2(LaidPairs, Ers_without_multi_Exons_Index, ~ dplyr::semi_join(x = ..1, y = ..2))
+      Ers_Laid_One_Exon <- future_map(LaidPairs,~ unite(data.frame(.x@first), col = "Region", sep="-", remove = TRUE) %>% table() %>% as_tibble() %>%
+          dplyr::filter(n == 1) %>% tidyr::separate(col = ".", into = c("seqnames", "start", "end", "width", "strand"),sep = "-", remove = TRUE) %>% dplyr::select(-c(n)) )
+     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "seqnames", as.factor(.x[[1]]) ))
+     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "start", as.integer(.x[["start"]]) ))
+     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "end", as.integer(.x[["end"]]) ))
+     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "width", as.integer(.x[["width"]]) ))
+     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "strand", as.factor(.x[["strand"]]) ))
+      
+      LaidPairs <- future_map2(LaidPairs, Ers_Laid_One_Exon, ~ dplyr::semi_join(x = as_tibble(..1@first), y = ..2))
       ############################################### Yet to be done ####################################################
       ### We need to prune the ERs laying on multiple exons.Temporarily, we omit these steps due to uncertainty regarding
       ###  applying width() function on a output of findOverlapPairs().
