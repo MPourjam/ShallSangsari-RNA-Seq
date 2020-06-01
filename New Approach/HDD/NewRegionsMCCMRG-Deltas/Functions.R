@@ -126,19 +126,19 @@ if (CalclulateDelta){
      names(Ers_Laid_One_Exon) <- OarSeqinfo@seqnames 
      gc()
      LaidPairs <- map(seq_len(length(NonOverlappedExons)),
-        ~findOverlapPairs(granges(Ers_Laid_One_Exon[[.x]]), granges(NonOverlappedExons[[.x]])), .id = "Chr")
+        ~findOverlapPairs(makeGRangesFromDataFrame(Ers_Laid_One_Exon[[.x]]), granges(NonOverlappedExons[[.x]])), .id = "Chr")
+      names(LaidPairs) <- OarSeqinfo@seqnames 
      gc()
      
-      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <-
+      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(LaidPairs,
+       ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
      # %>% transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
       
       save(Deltas, file = Deltas_file_path)
     } else {
       load(Deltas_file_path)
-      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(seq_len(length(NonOverlappedExons)),
-       ~as_tibble(findOverlapPairs(ranges(NonOverlappedExons[[..1]]), # We may need to change the query and subject 
-        ranges(RegionMat_MCC_MRG[[..1]][['regions']]))), .id = "Chr") %>% 
-      transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
+      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(LaidPairs,
+       ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
       save(Deltas, file = Deltas_file_path)
     }
   }
