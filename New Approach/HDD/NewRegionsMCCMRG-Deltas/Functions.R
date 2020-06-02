@@ -29,23 +29,23 @@ exluding_regions
 
 # This is the core function
 NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta = FALSE ){  
-  stopifnot(!file.exist(file.path(paste0(DBDir_Path,"RegionMat_Path.RData"))))
+  stopifnot(file.exists(file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))) 
   load( file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData"))) ### This will load the variable "RegionMat_Path" containing the path to RegionMat_MCC file
-  stopifnot(file.exist(file.path(paste0(DBDir_Path,"MRG.RData"))))
+  stopifnot(file.exists(file.path(paste0(DBDir_Path,"MRG.RData"))))
   load( file = file.path(paste0(DBDir_Path,"MRG.RData")))### This will load the variable "MRG"        
   MRG_RegionSet <- vector(mode = 'list',length = 2)
-  stopifnot(file.exist(fullCov_Path))
-  fullCov <- load(file = file.path(fullCov_Path))
+  stopifnot(file.exists(fullCov_Path))
+  load(file = file.path(fullCov_Path))
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
-  RegionMat <- load(file = file.path(RegionMat_Path))
+  load(file = file.path(RegionMat_Path))
   .subset2(MRG_RegionSet,1) <- map(RegionMat, ~ .subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
   .subset2(MRG_RegionSet,2) <- map(.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
   
   
     gc()
 
-if (!file.exist(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character(MRG), sep = "_" ), ".RData" )) )) {
+if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character(MRG), sep = "_" ), ".RData" )) )) {
     ## Filtering gaps
     gap_filtered <- map(.subset2(MRG_RegionSet,2), ~ .x[which(width(.x) <= as.integer(MRG)),])
 
@@ -97,14 +97,14 @@ if (CalclulateDelta){
   if (!c("NonOverlappedExons") %in% ls() ){
   warning(paste0("NonOverlappedExons was not loaded trying to load it from the", as.character(DBDir_Path),"!"),
    call. = FALSE, immediate. = TRUE)
-  if (!file.exist(paste0(DBDir_Path,"NonOverlappedExons.RData") )) {
+  if (!file.exists(paste0(DBDir_Path,"NonOverlappedExons.RData") )) {
     warning(paste0("NonOverlappedExons.RData does not exist in the following directory:",
      as.character(DBDir_Path)) ,call. = FALSE, immediate. = TRUE)
   } else {
     load(paste0(DBDir_Path,"NonOverlappedExons.RData"))
   }
 } else {
-    if (!file.exist(Deltas_file_path)) {
+    if (!file.exists(Deltas_file_path)) {
       warning(paste0("Deltas dataframe file was not found in the following directory: ",
        as.character(DBDir_Path), ". Attemping to create one."), immediate. = TRUE)
       Deltas_names <- tidyr::unite(MCC_MRG_Grid, "MCC_MRG", sep= "_", remove = TRUE )
