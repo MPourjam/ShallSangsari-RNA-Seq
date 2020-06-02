@@ -10,7 +10,7 @@ options(future.globals.onMissing= "ignore")
 ### Path
 cwd <- getwd()
 SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary
-fullCov_Path <- list.files(path = SavePath, pattern = "full(c|C)ov.(RData|rds)$", recursive = TRUE,full.names = TRUE)
+fullCov_Path <- list.files(path = dirname(SavePath), pattern = "full(c|C)ov.(RData|rds)$", recursive = TRUE,full.names = TRUE)
 
 
 ### Variables
