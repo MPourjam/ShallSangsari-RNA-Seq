@@ -22,15 +22,13 @@ for (c in seq_along(MCC)){   ##### Create seperate dirs for each RegionMat_MCC t
   if (!any(str_detect(pattern = paste0(paste("RegionMats", MCC[c], sep = "_"),".RData"),
     string = list.files(RegionMatsPath, full.names = FALSE, recursive=TRUE)))) {
 
-    file.create(file.path(paste0(paste0(paste0(RegionMatsPath,
-     paste("RegionMats", MCC[c], sep = "_"),"/"), paste("RegionMats", MCC[c], sep = "_")), ".RData")))
+    FilePath <- file.path(paste0(paste0(paste0(RegionMatsPath,
+     paste("RegionMats", MCC[c], sep = "_"),"/"), paste("RegionMats", MCC[c], sep = "_")), ".RData"))
 
     New_RegionMat <- regionMatrix(fullCov, cutoff = MCC[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
                         chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl")
     
-    save(New_RegionMat,
-         file = file.path(paste0(paste0(paste0(RegionMatsPath,
-     paste("RegionMats", MCC[c], sep = "_"),"/"), paste("RegionMats", MCC[c], sep = "_")), ".RData")))
+    save(New_RegionMat, file = FilePath)
     rm(New_RegionMat)
     gc()
     print(paste0("RegionMats data of cutoff value: ", MCC[c], " and mean filter policy has been saved to ",
