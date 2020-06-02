@@ -14,7 +14,7 @@ my $MCC_MRG = $MCCRangeLength * $MRGRangeLength;
 my @MCC_MRG = (1..$MCC_MRG);
 
 foreach(@MCC_MRG){
-exec "sudo Rscript ./NewRegionsMCCMRG-Deltas.R && free -h && sudo sysctl -w vm.drop_caches=3 && sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches && free -h";
+exec "sudo Rscript ./NewRegionsMCCMRG-Deltas.R ; free -h && sudo sysctl -w vm.drop_caches=3 && sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches && free -h";
 }
 
 #print("$MCC\n");
