@@ -21,7 +21,7 @@ if (length(fullCov_Path) == 1){
 if (str_detect(fullCov_Path,".*.rds$")){  ###### What if there are more than one file containing "fullcov" and ".rds
   load(fullCov_Path) #### How is it possible to have fullCov data in a directory which is newly built (SavedData)
 } else if(stringr::str_detect(fullCov_Path, ".*.RData")) {
-  fullCov <<- load(fullCov_Path)
+ load(fullCov_Path)
 }
 } else {
   stop("There are more than one fulCov files in our working directory(cwd) or /n niehter rds nor RData files was found." )
