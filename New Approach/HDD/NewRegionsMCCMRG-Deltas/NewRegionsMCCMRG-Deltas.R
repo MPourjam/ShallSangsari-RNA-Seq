@@ -28,11 +28,11 @@ for (c in seq_along(MCC)){   ##### Create seperate dirs for each RegionMat_MCC t
      dir.create(dirname(FilePath))
      file.create(FilePath)
 	  
-    New_RegionMat <- regionMatrix(fullCov, cutoff = MCC[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
+    RegionMat <- regionMatrix(fullCov, cutoff = MCC[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
                         chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl")
     
-    save(New_RegionMat, file = FilePath)
-    rm(New_RegionMat)
+    save(RegionMat, file = FilePath)
+    rm(RegionMat)
     gc()
     print(paste0("RegionMats data of cutoff value: ", MCC[c], " and mean filter policy has been saved to ",
       file.path(paste0(paste0(RegionMatsPath, paste("RegionMats", MCC[c], sep = "_")), ".RData"))))
@@ -46,12 +46,12 @@ rm(c)
 MRGfile_Path <- file.path(paste0(SavePath,"MRG.RData"))
 RegionMat_Path_file <- file.path(paste0(SavePath,"RegionMat_Path.RData"))
 
-if (!file.exist(MRGfile_Path)){
+if (!file.exists(MRGfile_Path)){
   file.create(MRGfile_Path)
   MRG <- as.numeric(MCC_MRG_Grid[1,2])
   save(MRG, file = MRGfile_Path)
 } 
-if (!file.exist(RegionMat_Path_file)){
+if (!file.exists(RegionMat_Path_file)){
   file.create(RegionMat_Path_file)
   ########### NEED THE PATH TO RegionMat Matrice
   RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE),
@@ -65,15 +65,15 @@ if (!file.exist(RegionMat_Path_file)){
 }
     ### Step4- Creating the NonOverlappedExons
 
-if (!file.exist(paste0(SavePath, "NonOverlappedExons.RData"))){
+if (!file.exists(paste0(SavePath, "NonOverlappedExons.RData"))){
 codingexons <- genomicState$codingGenome[mcols(genomicState$codingGenome)[,1] == "exon", ]
 #Next function used to utilize 'ranges' function which incurrd loss of 'strand' so that the better "granges" was substituted.
-codingexonsByChr <- future_map(levels(seqnames(codingexons)), ~ granges(codingexons[seqnames(codingexons) == .x,]))
+codingexonsByChr <- map(levels(seqnames(codingexons)), ~ granges(codingexons[seqnames(codingexons) == .x,]))
 names(codingexonsByChr) <-  seqnames(OarSeqinfo)
-OverlappedPairs <- future_map(codingexonsByChr, ~ findOverlapPairs(.x,.x))
-OverlappedExonsNames <- future_map(seq_len(27), ### Unless a reason could be found, it seems futile finding overlappedExonNames first!!!!
+OverlappedPairs <- map(codingexonsByChr, ~ findOverlapPairs(.x,.x))
+OverlappedExonsNames <- map(seq_len(27), ### Unless a reason could be found, it seems futile finding overlappedExonNames first!!!!
    ~ as.data.frame(table(as.data.frame(OverlappedPairs[[..1]])[,4]))[as.data.frame(table(as.data.frame(OverlappedPairs[[..1]])[,4]))[,2] > 1,1])
-NonOverlappedExons <- future_map(seq_len(length(codingexonsByChr)),
+NonOverlappedExons <- map(seq_len(length(codingexonsByChr)),
  ~ codingexonsByChr[[..1]][! as.data.frame(codingexonsByChr[[..1]])[,4] %in% OverlappedExonsNames[[..1]]] )
 names(NonOverlappedExons) <-  as.character(seqnames(OarSeqinfo))
 save(NonOverlappedExons, file = file.path(paste0(SavePath, "NonOverlappedExons.RData")))
@@ -85,4 +85,4 @@ load(file.path(paste0(SavePath, "NonOverlappedExons.RData")))
     ### Step5- Performing the core function, creating the new regions and Deltas
 
 # Examine the load and save behaviour
-NewRegions( MCC_MRG_Grid = MCC_MRG_Grid, DBDir_Path = SavePath, CalclulateDelta = TRUE)
+NewRegions( MCC_MRG_Grid = MCC_MRG_Grid, fullCov_Path = fullCov_Path, DBDir_Path = SavePath, CalclulateDelta = TRUE)
