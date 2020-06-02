@@ -24,7 +24,10 @@ for (c in seq_along(MCC)){   ##### Create seperate dirs for each RegionMat_MCC t
 
     FilePath <- file.path(paste0(paste0(paste0(RegionMatsPath,
      paste("RegionMats", MCC[c], sep = "_"),"/"), paste("RegionMats", MCC[c], sep = "_")), ".RData"))
-
+     
+     dir.create(dirname(FilePath))
+     file.create(FilePath)
+	  
     New_RegionMat <- regionMatrix(fullCov, cutoff = MCC[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
                         chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl")
     
