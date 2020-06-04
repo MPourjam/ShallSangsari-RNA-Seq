@@ -9,9 +9,9 @@ source("Functions.R")
 
 if (!"RegionMats" %in% list.dirs(SavePath, full.names = FALSE)) {
   dir.create(path = paste0(SavePath, "RegionMats"))
-  RegionMatsPath <- file.path(paste0(SavePath, "RegionMats/"))
+  RegionMatsPath <- file.path(paste0(SavePath, "RegionMats"))#### Caused double "/" in file's path to regionMats
 } else {
-  RegionMatsPath <- file.path(paste0(SavePath, "RegionMats/"))
+  RegionMatsPath <- file.path(paste0(SavePath, "RegionMats"))
 }
 
 
@@ -19,10 +19,10 @@ if (!"RegionMats" %in% list.dirs(SavePath, full.names = FALSE)) {
 
 
 for (c in seq_along(MCC)){   ##### Create seperate dirs for each RegionMat_MCC to store RegionMat_MCC.RData and MRG derived regions.RData 
-  if (!any(str_detect(pattern = paste0(paste("RegionMats", MCC[c], sep = "_"),".RData"),
+  if (!any(stringr::str_detect(pattern = paste0(paste("RegionMats", MCC[c], sep = "_"),".RData"),
     string = list.files(RegionMatsPath, full.names = FALSE, recursive=TRUE)))) {
 
-    FilePath <- file.path(paste0(paste0(paste0(RegionMatsPath,
+    FilePath <- file.path(paste0(paste0(paste0(RegionMatsPath, "/", ## Due to deletion of "/" from RegionMatsPath
      paste("RegionMats", MCC[c], sep = "_"),"/"), paste("RegionMats", MCC[c], sep = "_")), ".RData"))
      
      dir.create(dirname(FilePath))
@@ -62,6 +62,8 @@ if (!file.exists(RegionMat_Path_file)){
   }else{
   save(RegionMat_Path, file = RegionMat_Path_file)  
    }
+} else {
+  
 }
     ### Step4- Creating the NonOverlappedExons
 
