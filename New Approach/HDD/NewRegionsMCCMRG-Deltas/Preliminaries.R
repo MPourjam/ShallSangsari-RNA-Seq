@@ -18,9 +18,9 @@ MCC <- c(seq(0.5,20,0.5))
 MRG <- c(seq(10,100, 10))
 MCC_MRG_Grid <- expand.grid(MCC,MRG)
 if (length(fullCov_Path) == 1){
-if (str_detect(fullCov_Path,".*.rds$")){  ###### What if there are more than one file containing "fullcov" and ".rds
+if (str_detect(fullCov_Path,".*.rds$")  & !"fullCov" %in% ls(envir = globalenv()) ){  ###### What if there are more than one file containing "fullcov" and ".rds
   load(fullCov_Path) #### How is it possible to have fullCov data in a directory which is newly built (SavedData)
-} else if(stringr::str_detect(fullCov_Path, ".*.RData")) {
+} else if(stringr::str_detect(fullCov_Path, ".*.RData")  & !"fullCov" %in% ls(envir = globalenv()) ) {
  load(fullCov_Path)
 }
 } else {
