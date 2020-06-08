@@ -6,10 +6,10 @@ is.sequential <- function(vector, diff = 1){
     if (vector[iter+ 1] == vector[iter] + diff){
       # it will go to upper iteration
     } else{
-    c(gap, iter)
+    gap <- c(gap, iter)
     }
   }
- c(gap, i[length(i)])
+ gap <- c(gap, i[length(i)])
 }
 
 
