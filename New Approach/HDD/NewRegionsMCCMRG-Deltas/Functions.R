@@ -39,8 +39,8 @@ NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta =
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
   load(file = file.path(RegionMat_Path))
-  .subset2(MRG_RegionSet,1) <- map(RegionMat, ~ .subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
-  .subset2(MRG_RegionSet,2) <- map(.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
+  MRG_RegionSet[[1]] <- map(RegionMat, ~ base::.subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
+  MRG_RegionSet[[2]] <- map(base::.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
   
   
     gc()
