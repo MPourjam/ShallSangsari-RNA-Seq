@@ -61,7 +61,7 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
 
     ### Retrieving corresponding regoins using indices from preceding regions vector (list of 27)
     Leader_Follower_PrecedingRegion <- map2(preceding_region, Leader_Follower_Index,
-     ~tibble(LeaderRegion = ..1[.subset2(..2, 1),]+1 ), FollowerRegion = ..1[.subset2(..2,2),])
+     ~tibble(LeaderRegion = ..1[[1]][.subset2(..2, 1)]+1 , FollowerRegion = ..1[[1]][.subset2(..2,2)]))
     names(Leader_Follower_PrecedingRegion) <- paste0("Chr", as.character(c(1:26,"X")))
 
     ### Constituting new regioins
