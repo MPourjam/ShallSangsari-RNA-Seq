@@ -34,8 +34,10 @@ NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta =
   stopifnot(file.exists(file.path(paste0(DBDir_Path,"MRG.RData"))))
   load( file = file.path(paste0(DBDir_Path,"MRG.RData")))### This will load the variable "MRG"        
   MRG_RegionSet <- vector(mode = 'list',length = 2)
-  stopifnot(file.exists(fullCov_Path))
-  load(file = file.path(fullCov_Path))
+  if (!"fullCov" %in% ls(envir = globalenv()) ){
+    stopifnot(file.exists(fullCov_Path))
+    load(file = file.path(fullCov_Path))
+  }
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
   load(file = file.path(RegionMat_Path))
