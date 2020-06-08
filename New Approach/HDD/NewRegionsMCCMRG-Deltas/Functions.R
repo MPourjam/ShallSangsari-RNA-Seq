@@ -13,10 +13,10 @@ is.sequential <- function(vector, diff = 1){
 }
 
 
-gaps_Grange <- function(regionMat_region_Grange){
-  gaps <- map(regionMat_region_Grange, ~ as.data.frame(gaps(.x))[-c(1,2)])
-  gaps <- map(gaps,~makeGRangesFromDataFrame(.x[.x$start > 1,], keep.extra.columns = TRUE ))
-  gaps <- map(gaps, ~ sort.GenomicRanges(.x))
+gaps_Grange <- function(regionMat_region_Grange) {
+  gaps <- as.data.frame(gaps(regionMat_region_Grange))
+  gaps <- makeGRangesFromDataFrame(gaps[gaps$start > 1,], keep.extra.columns = TRUE )
+  gaps <-  sort.GenomicRanges(gaps)
   gaps
 }
 
