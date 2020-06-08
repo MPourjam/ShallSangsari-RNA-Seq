@@ -60,8 +60,10 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
      mutate(FollowerIndex = dplyr::lag(LeaderIndex + 1, default = 1)) )  #??? What about the last one in preceding_region
 
     ### Retrieving corresponding regoins using indices from preceding regions vector (list of 27)
-    Leader_Follower_PrecedingRegion <- map2(preceding_region, Leader_Follower_Index,
-     ~tibble(LeaderRegion = ..1[[1]][.subset2(..2, 1)]+1 , FollowerRegion = ..1[[1]][.subset2(..2,2)]))
+   Leader_Follower_PrecedingRegion <- map(names(preceding_region), ~tibble(LeaderRegion = as_tibble(unlist(ifelse(any(preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1),]+1 > IRanges::NROW(.subset2(MRG_RegionSet, 1)[[.x]])),
+                                                                                                               rbind.data.frame(as_tibble(preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1)[-c(length(.subset2(Leader_Follower_Index[[.x]], 1)))],]+1),
+                                                                                                                                preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1)[c(length(.subset2(Leader_Follower_Index[[.x]], 1)))],]),
+                                                                                                     preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1),]+1)))[[1]] , FollowerRegion = preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]],2),][[1]]))
     names(Leader_Follower_PrecedingRegion) <- paste0("Chr", as.character(c(1:26,"X")))
 
     ### Constituting new regioins
@@ -70,7 +72,7 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
     New_Regions_Strand <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1),
       ~strand(..2[.subset2(..1, 2),]))
     New_Regions_Ranges <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1), 
-      ~IRanges(start = start(..2[[.subset2(..1, 2)]]), end = end(..2[.subset2(..1, 1),])))
+      ~IRanges(start = start(..2[.subset2(..1, 2),]), end = end(..2[.subset2(..1, 1),])))
     New_Regions_GRange <- pmap(New_Regions_Seqnames, New_Regions_Strand, New_Regions_Ranges,
       ~ GRanges(seqnames = ..1, ranges = ..3, strand = ..2))
 
