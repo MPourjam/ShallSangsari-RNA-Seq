@@ -64,7 +64,7 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
                                                                                                                rbind.data.frame(as_tibble(preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1)[-c(length(.subset2(Leader_Follower_Index[[.x]], 1)))],]+1),
                                                                                                                                 preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1)[c(length(.subset2(Leader_Follower_Index[[.x]], 1)))],]),
                                                                                                      preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]], 1),]+1)))[[1]] , FollowerRegion = preceding_region[[.x]][.subset2(Leader_Follower_Index[[.x]],2),][[1]]))
-    names(Leader_Follower_PrecedingRegion) <- paste0("Chr", as.character(c(1:26,"X")))
+    names(Leader_Follower_PrecedingRegion) <- seqnames(OarSeqinfo)
 
     ### Constituting new regioins
     New_Regions_Seqnames <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1),
