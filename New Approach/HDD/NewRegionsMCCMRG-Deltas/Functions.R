@@ -79,7 +79,7 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
     names(New_Regions_GRange) <- seqnames(OarSeqinfo)
 
     ### Removing compiled regions from the list of regions
-  excluding_regions_allChrs <- map(Leader_Follower_PrecedingRegion, ~ exclude_compiled_regions)
+  excluding_regions_allChrs <- map(Leader_Follower_PrecedingRegion, ~ exclude_compiled_regions(.x))
 
   compiled_regions_excluded_tibble <- map2(.subset2(MRG_RegionSet,1) , excluding_regions_allChrs,
    ~ as_tibble(..1[-c(..2),c("seqnames","ranges","strand")])) ### Might incur problems due to nature of regions as a Grange (not subsettable)
