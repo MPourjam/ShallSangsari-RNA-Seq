@@ -83,11 +83,17 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
 
   compiled_regions_excluded_tibble <- map2(.subset2(MRG_RegionSet,1) , excluding_regions_allChrs,
      ~ as_tibble(..1[-c(..2),])[,c("seqnames","start","end","width","strand")]) ### Might incur problems due to nature of regions as a Grange (not subsettable)
-  RegionMat_MCC_MRG <- map2(compiled_regions_excluded_tibble, New_Regions_GRange, ### fitering for regions longer than 3 to exclude microexons
-   ~ list(regions = sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ) %>% 'Seqinfo<-'(OarSeqinfo)), #### Retrieving regionCoverage for 
-    bpCoverage = getRegionCoverage(fullCov, sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ))) ) )
+  
+  #RegionMat_MCC_MRG <- map2(compiled_regions_excluded_tibble, New_Regions_GRange, ### fitering for regions longer than 3 to exclude microexons
+  # ~ list(regions = sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ) %>% 'Seqinfo<-'(OarSeqinfo)), #### Retrieving regionCoverage for 
+  #  bpCoverage = getRegionCoverage(fullCov, sort.GenomicRanges(makeGRangesFromDataFrame(dply::filter(bind_rows(..1,..2), width(ranges) > 3) ))) ) )
+  
+ RegionMat_MCC_MRG <- makeGRangesListFromDataFrame( map2_dfr(compiled_regions_excluded_tibble, New_Regions_GRange, 
+                                                              ~ as_tibble(sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,as_tibble(..2)), width > 3) )))))
+  
+  seqinfo(RegionMat_MCC_MRG) <- OarSeqinfo
   #### Doing all at once may put such a heavy burden on the RAM (pay attention to above)
-  names(RegionMat_MCC_MRG) <- seqnames(OarSeqinfo)
+  
 
   # Saving NewRegions
 save(RegionMat_MCC_MRG,
