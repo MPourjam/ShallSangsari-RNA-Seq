@@ -76,7 +76,7 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
    New_Regions_GRange <- map(seqnames(OarSeqinfo), ~GRanges(seqnames = New_Regions_Seqnames[[.x]],
                                                              ranges = New_Regions_Ranges[[.x]],
                                                              strand = New_Regions_Strand[[.x]]))
-    names(New_Regions_GRange0) <- seqnames(OarSeqinfo)
+    names(New_Regions_GRange) <- seqnames(OarSeqinfo)
 
     ### Removing compiled regions from the list of regions
   excluding_regions_allChrs <- map(Leader_Follower_PrecedingRegion, ~ exclude_compiled_regions)
