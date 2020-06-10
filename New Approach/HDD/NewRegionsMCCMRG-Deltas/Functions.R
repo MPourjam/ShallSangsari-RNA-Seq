@@ -73,8 +73,10 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
       ~strand(..2[.subset2(..1, 2),]))
     New_Regions_Ranges <- map2(Leader_Follower_PrecedingRegion, .subset2(MRG_RegionSet, 1), 
      ~IRanges(start = start(..2[.subset2(..1, 2),]), end = end(..2[.subset2(..1, 1),])))
-    New_Regions_GRange <- pmap(New_Regions_Seqnames, New_Regions_Strand, New_Regions_Ranges,
-      ~ GRanges(seqnames = ..1, ranges = ..3, strand = ..2))
+   New_Regions_GRange <- map(seqnames(OarSeqinfo), ~GRanges(seqnames = New_Regions_Seqnames[[.x]],
+                                                             ranges = New_Regions_Ranges[[.x]],
+                                                             strand = New_Regions_Strand[[.x]]))
+    names(New_Regions_GRange0) <- seqnames(OarSeqinfo)
 
     ### Removing compiled regions from the list of regions
   excluding_regions_allChrs <- map(Leader_Follower_PrecedingRegion, ~ exclude_compiled_regions)
