@@ -88,12 +88,29 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
   # ~ list(regions = sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ) %>% 'Seqinfo<-'(OarSeqinfo)), #### Retrieving regionCoverage for 
   #  bpCoverage = getRegionCoverage(fullCov, sort.GenomicRanges(makeGRangesFromDataFrame(dply::filter(bind_rows(..1,..2), width(ranges) > 3) ))) ) )
   
- RegionMat_MCC_MRG <- makeGRangesListFromDataFrame( map2_dfr(compiled_regions_excluded_tibble, New_Regions_GRange, 
+ RegionMat_MCC_MRG <- makeGRangesFromDataFrame( map2_dfr(compiled_regions_excluded_tibble, New_Regions_GRange, ### It Seems 'makeGRangesListFromDataFrame' needs to be changed to 'makeGRangesFromDataFrame'
                                                               ~ as_tibble(sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,as_tibble(..2)), width > 3) )))))
   
   seqinfo(RegionMat_MCC_MRG) <- OarSeqinfo
   #### Doing all at once may put such a heavy burden on the RAM (pay attention to above)
   
+  # Re-creating RegionMat with new set of regions
+    # Regions
+      ReformedRegionMat_regions <- vector("list", 27)
+      names(ReformedRegionMat_regions) <- c(rep(1:26), "X")
+      for (i in seq(1,27)){
+        ReformedRegionMat_regions[[i]]$regions <- split(RegionMat_MCC_MRG, factor(RegionMat_MCC_MRG@seqnames))[[i]]
+      } 
+      rm(i)
+    
+    # CoverageMatrix
+      
+    
+    # bpCoverage
+      for (r in seq(1,27)){
+        ReformedRegionMat_regions[[r]]$bpCoverage <- getRegionCoverage(regions = ReformedRegionMat_regions[[r]][["regions"]],fullCov = fullCov)
+      }
+      rm(r)
 
   # Saving NewRegions
 save(RegionMat_MCC_MRG,
