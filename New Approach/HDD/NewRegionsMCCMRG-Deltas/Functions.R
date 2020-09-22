@@ -40,12 +40,12 @@ NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta =
   }
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
-  load(file = file.path(RegionMat_Path))
+  load(file = file.path(RegionMat_Path)) ## This loads RegionMat (13.72 Gb) to the memory
   MRG_RegionSet[[1]] <- map(RegionMat, ~ base::.subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
   MRG_RegionSet[[2]] <- map(base::.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
+  rm("RegionMat")
   
-  
-    gc()
+   gc()
 
 if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character(MRG), sep = "_" ), ".RData" )) )) {
     ## Filtering gaps
@@ -102,7 +102,8 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
         ReformedRegionMat_regions[[i]]$regions <- split(RegionMat_MCC_MRG, factor(RegionMat_MCC_MRG@seqnames))[[i]]
       } 
       rm(i)
-    
+      RegionMat_MCC_MRG <- ReformedRegionMat_regions ### To keep the downstream process consistent 
+      gc()
     # CoverageMatrix
       
     
