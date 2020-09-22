@@ -29,7 +29,7 @@ for (c in seq_along(MCC)){   ##### Create seperate dirs for each RegionMat_MCC t
      file.create(FilePath)
 	  
     RegionMat <- regionMatrix(fullCov, cutoff = MCC[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
-                        chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl")
+                        chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl", returnBP=FALSE)
     
     save(RegionMat, file = FilePath)
     rm(RegionMat)
