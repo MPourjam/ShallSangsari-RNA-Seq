@@ -40,7 +40,7 @@ NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta =
   }
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
-  load(file = file.path(RegionMat_Path)) ## This loads RegionMat (13.72 Gb) to the memory
+  load(file = file.path(RegionMat_Path)) ## This loads RegionMat to the memory
   MRG_RegionSet[[1]] <- map(RegionMat, ~ base::.subset2(.x, 1)) #### The Structure of RegionMat is RegionMat$Chr$regions
   MRG_RegionSet[[2]] <- map(base::.subset2(MRG_RegionSet, 1), ~ gaps_Grange(.x))
   rm("RegionMat")
@@ -84,10 +84,6 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
   compiled_regions_excluded_tibble <- map2(.subset2(MRG_RegionSet,1) , excluding_regions_allChrs,
      ~ as_tibble(..1[-c(..2),])[,c("seqnames","start","end","width","strand")]) ### Might incur problems due to nature of regions as a Grange (not subsettable)
   
-  #RegionMat_MCC_MRG <- map2(compiled_regions_excluded_tibble, New_Regions_GRange, ### fitering for regions longer than 3 to exclude microexons
-  # ~ list(regions = sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,..2), width(ranges) > 3) ) %>% 'Seqinfo<-'(OarSeqinfo)), #### Retrieving regionCoverage for 
-  #  bpCoverage = getRegionCoverage(fullCov, sort.GenomicRanges(makeGRangesFromDataFrame(dply::filter(bind_rows(..1,..2), width(ranges) > 3) ))) ) )
-  
  RegionMat_MCC_MRG <- makeGRangesFromDataFrame( map2_dfr(compiled_regions_excluded_tibble, New_Regions_GRange, ### It Seems 'makeGRangesListFromDataFrame' needs to be changed to 'makeGRangesFromDataFrame'
                                                               ~ as_tibble(sort.GenomicRanges(makeGRangesFromDataFrame(dplyr::filter(bind_rows(..1,as_tibble(..2)), width > 3) )))))
   
@@ -105,13 +101,10 @@ if (!file.exists(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character
       RegionMat_MCC_MRG <- ReformedRegionMat_regions ### To keep the downstream process consistent 
       gc()
     # CoverageMatrix
-      
-    
+      # They are not needed now.
+  
     # bpCoverage
-      for (r in seq(1,27)){
-        ReformedRegionMat_regions[[r]]$bpCoverage <- getRegionCoverage(regions = ReformedRegionMat_regions[[r]][["regions"]],fullCov = fullCov)
-      }
-      rm(r)
+     # They are not needed now.
 
   # Saving NewRegions
 save(RegionMat_MCC_MRG,
@@ -127,51 +120,52 @@ if (CalclulateDelta){
   if (!c("NonOverlappedExons") %in% ls() ){
   warning(paste0("NonOverlappedExons was not loaded trying to load it from the", as.character(DBDir_Path),"!"),
    call. = FALSE, immediate. = TRUE)
-  if (!file.exists(paste0(DBDir_Path,"NonOverlappedExons.RData") )) {
-    warning(paste0("NonOverlappedExons.RData does not exist in the following directory:",
-     as.character(DBDir_Path)) ,call. = FALSE, immediate. = TRUE)
-  } else {
+  stopifnot(file.exists(paste0(DBDir_Path,"NonOverlappedExons.RData")) )
     load(paste0(DBDir_Path,"NonOverlappedExons.RData"))
-  }
-} else {
-    if (!file.exists(Deltas_file_path)) {
-      warning(paste0("Deltas dataframe file was not found in the following directory: ",
-       as.character(DBDir_Path), ". Attemping to create one."), immediate. = TRUE)
-      Deltas_names <- tidyr::unite(MCC_MRG_Grid, "MCC_MRG", sep= "_", remove = TRUE )
-      Deltas <- vector(mode = "list", length = nrow(MCC_MRG_Grid))
-      names(Deltas) <- as.character(Deltas_names[["MCC_MRG"]])
+}
 
-      ## Filtering for regions loonger than 3bp-long has been done on line 80 (RegionMat_MCC_MRG)
-      LaidPairs <- map(seq_len(length(NonOverlappedExons)),
-        ~findOverlapPairs(granges(RegionMat_MCC_MRG[[.x]][['regions']]),
-          granges(NonOverlappedExons[[.x]])), .id = "Chr")
-      ### Filtering Er's laid on multiple Exons
-      Ers_Laid_One_Exon <- map(LaidPairs,~ unite(data.frame(.x@first), col = "Region", sep="-", remove = TRUE) %>% table() %>% as_tibble() %>%
-          dplyr::filter(n == 1) %>% tidyr::separate(col = ".", into = c("seqnames", "start", "end", "width", "strand"),sep = "-", remove = TRUE) %>% dplyr::select(-c(n)) )
-     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "seqnames", as.factor(.x[[1]]) ))
-     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "start", as.integer(.x[["start"]]) ))
-     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "end", as.integer(.x[["end"]]) ))
-     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "width", as.integer(.x[["width"]]) ))
-     Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "strand", as.factor(.x[["strand"]]) ))
-     names(Ers_Laid_One_Exon) <- OarSeqinfo@seqnames 
-     gc()
-     LaidPairs <- map(seq_len(length(NonOverlappedExons)),
-        ~findOverlapPairs(makeGRangesFromDataFrame(Ers_Laid_One_Exon[[.x]]), granges(NonOverlappedExons[[.x]])), .id = "Chr")
-      names(LaidPairs) <- OarSeqinfo@seqnames 
-     gc()
-     
-      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(LaidPairs,
-       ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
-     # %>% transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
-      
-      save(Deltas, file = Deltas_file_path)
-    } else {
-      load(Deltas_file_path)
-      Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(LaidPairs,
-       ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
-      save(Deltas, file = Deltas_file_path)
-    }
+  if (!file.exists(Deltas_file_path)) {
+    warning(paste0("Deltas dataframe file was not found in the following directory: ",
+     as.character(DBDir_Path), ". Attemping to create one."), immediate. = TRUE)
+    Deltas_names <- tidyr::unite(MCC_MRG_Grid, "MCC_MRG", sep= "_", remove = TRUE )
+    Deltas <- vector(mode = "list", length = nrow(MCC_MRG_Grid))
+    names(Deltas) <- as.character(Deltas_names[["MCC_MRG"]])
+
+    ## Filtering for regions loonger than 3bp-long has been done on line 80 (RegionMat_MCC_MRG)
+    LaidPairs <- map(seq_len(length(NonOverlappedExons)),
+      ~findOverlapPairs(granges(RegionMat_MCC_MRG[[.x]][['regions']]),
+        granges(NonOverlappedExons[[.x]])), .id = "Chr")
+    ### Filtering Er's laid on multiple Exons
+    Ers_Laid_One_Exon <- map(LaidPairs,~ unite(data.frame(.x@first), col = "Region", sep="-", remove = TRUE) %>% table() %>% as_tibble() %>%
+        dplyr::filter(n == 1) %>% tidyr::separate(col = ".", into = c("seqnames", "start", "end", "width", "strand"),sep = "-", remove = TRUE) %>% dplyr::select(-c(n)) )
+   Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "seqnames", as.factor(.x[[1]]) ))
+   Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "start", as.integer(.x[["start"]]) ))
+   Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "end", as.integer(.x[["end"]]) ))
+   Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "width", as.integer(.x[["width"]]) ))
+   Ers_Laid_One_Exon <- map(Ers_Laid_One_Exon, ~ base::`$<-`(.x, "strand", as.factor(.x[["strand"]]) ))
+   names(Ers_Laid_One_Exon) <- OarSeqinfo@seqnames 
+   gc()
+   LaidPairs <- map(seq_len(length(NonOverlappedExons)),
+      ~findOverlapPairs(makeGRangesFromDataFrame(Ers_Laid_One_Exon[[.x]]), granges(NonOverlappedExons[[.x]])), .id = "Chr")
+    names(LaidPairs) <- OarSeqinfo@seqnames 
+   gc()
+
+    Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(LaidPairs,
+     ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
+   # %>% transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
+
+    save(Deltas, file = Deltas_file_path)
+  } else {
+    load(Deltas_file_path)
+    load(file.path(paste0(SaveDir, paste(basename(SaveDir), as.character(MRG), sep = "_" ), ".RData" ))) ## This will load "RegionMat_MCC_MRG"
+    LaidPairs <- map(seq_len(length(NonOverlappedExons)),
+      ~findOverlapPairs(granges(RegionMat_MCC_MRG[[.x]][['regions']]),
+        granges(NonOverlappedExons[[.x]])), .id = "Chr")
+    Deltas[[paste0(as.character(MCC),"_",as.character(MRG))]] <- map_dfr(LaidPairs,
+     ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
+    save(Deltas, file = Deltas_file_path)
   }
+
 }
 
 NextMCC_MRG <- MCC_MRG_Grid[which(MCC_MRG_Grid[[2]] == MRG & MCC_MRG_Grid[[1]] == MCC) + 1 , ]
