@@ -18,24 +18,24 @@ if (!"RegionMats" %in% list.dirs(SavePath, full.names = FALSE)) {
 		### Step2- Creating the RegionMats
 
 
-for (c in seq_along(MCC)){   ##### Create seperate dirs for each RegionMat_MCC to store RegionMat_MCC.RData and MRG derived regions.RData 
-  if (!any(stringr::str_detect(pattern = paste0(paste("RegionMats", MCC[c], sep = "_"),".RData"),
+for (c in seq_along(MCC_Set)){   ##### Create seperate dirs for each RegionMat_MCC to store RegionMat_MCC.RData and MRG derived regions.RData 
+  if (!any(stringr::str_detect(pattern = paste0(paste("RegionMats", MCC_Set[c], sep = "_"),".RData"),
     string = list.files(RegionMatsPath, full.names = FALSE, recursive=TRUE)))) {
 
     FilePath <- file.path(paste0(paste0(paste0(RegionMatsPath, "/", ## Due to deletion of "/" from RegionMatsPath
-     paste("RegionMats", MCC[c], sep = "_"),"/"), paste("RegionMats", MCC[c], sep = "_")), ".RData"))
+     paste("RegionMats", MCC_Set[c], sep = "_"),"/"), paste("RegionMats", MCC_Set[c], sep = "_")), ".RData"))
      
      dir.create(dirname(FilePath))
      file.create(FilePath)
 	  
-    RegionMat <- regionMatrix(fullCov, cutoff = MCC[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
+    RegionMat <- regionMatrix(fullCov, cutoff = MCC_Set[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
                         chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl", returnBP=FALSE)
     
     save(RegionMat, file = FilePath)
     rm(RegionMat)
     gc()
-    print(paste0("RegionMats data of cutoff value: ", MCC[c], " and mean filter policy has been saved to ",
-      file.path(paste0(paste0(RegionMatsPath, paste("RegionMats", MCC[c], sep = "_")), ".RData"))))
+    print(paste0("RegionMats data of cutoff value: ", MCC_Set[c], " and mean filter policy has been saved to ",
+      file.path(paste0(paste0(RegionMatsPath, paste("RegionMats", MCC_Set[c], sep = "_")), ".RData"))))
   }
 }
 rm(c)
