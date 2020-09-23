@@ -14,8 +14,8 @@ fullCov_Path <- list.files(path = dirname(SavePath), pattern = "full(c|C)ov.(RDa
 
 
 ### Variables
-MCC <- c(seq(0.5,20,0.5))
-MRG <- c(seq(10,100, 10))
+MCC_Set <- c(seq(0.5,20,0.5))
+MRG_Set <- c(seq(10,100, 10))
 MCC_MRG_Grid <- expand.grid(MCC,MRG)
 if (length(fullCov_Path) == 1){
 if (str_detect(fullCov_Path,".*.rds$")  & !"fullCov" %in% ls(envir = globalenv()) ){  ###### What if there are more than one file containing "fullcov" and ".rds
@@ -46,31 +46,31 @@ rownames(pheno) <- NULL
 
 Breeds <- c("Shall","San")
 
-bamfilespath <- list.files(path = "/media/animalscience/My Passport/MPourjam/DATA/Analyze/Out/Sheep" #### Why do we need bamfilespath...
-                            ## in cwd might be anywhere pay attention to addess of bamfilespath
-                            , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
-                            , recursive = TRUE )
+# bamfilespath <- list.files(path = "/media/animalscience/My Passport/MPourjam/DATA/Analyze/Out/Sheep" #### Why do we need bamfilespath...
+#                             ## in cwd might be anywhere pay attention to addess of bamfilespath
+#                             , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
+#                             , recursive = TRUE )
 
-readsnames <- gsub(".*/(.*)_Aligned.out.bam", "\\1", bamfilespath)
- names(bamfilespath) <- readsnames
+# readsnames <- gsub(".*/(.*)_Aligned.out.bam", "\\1", bamfilespath)
+#  names(bamfilespath) <- readsnames
 
-Coordbamfilespath <- list.files(path = "/media/animalscience/My Passport/MPourjam/DATA/Analyze/Out/Sheep"
-                                 , pattern = "sortedByCoord.out.bam$", full.names = TRUE
-                                , recursive = TRUE)
+# Coordbamfilespath <- list.files(path = "/media/animalscience/My Passport/MPourjam/DATA/Analyze/Out/Sheep"
+#                                  , pattern = "sortedByCoord.out.bam$", full.names = TRUE
+#                                 , recursive = TRUE)
 
-Coordbamfilespathindex <- paste0(Coordbamfilespath, ".bai")
+# Coordbamfilespathindex <- paste0(Coordbamfilespath, ".bai")
 
-Bamfiles <- map(seq_along(Coordbamfilespath), function(i) {BamFile(file = Coordbamfilespath[i],
-index = Coordbamfilespathindex[i])})
+# Bamfiles <- map(seq_along(Coordbamfilespath), function(i) {BamFile(file = Coordbamfilespath[i],
+# index = Coordbamfilespathindex[i])})
 
-bamfileslist <-  BamFileList(Bamfiles)
-names(bamfileslist) <- readsnames
+# bamfileslist <-  BamFileList(Bamfiles)
+# names(bamfileslist) <- readsnames
 
-# Totalmapped
-TotalMapped <- as.vector(map_dbl(Coordbamfilespath, getTotalMapped))
-names(TotalMapped) <- names(bamfileslist)
+# # Totalmapped
+# TotalMapped <- as.vector(map_dbl(Coordbamfilespath, getTotalMapped))
+# names(TotalMapped) <- names(bamfileslist)
 
- pheno$Samples <- names(bamfileslist)
+#  pheno$Samples <- names(bamfileslist)
 
 # # Creating Metadata columns and TxDb Object
 # met <- data.frame( IllSeqSheep = c(paste("LF_San_", rep(1:3,1), sep = "" )
