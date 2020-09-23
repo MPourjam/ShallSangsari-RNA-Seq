@@ -29,8 +29,8 @@ for (c in seq_along(MCC_Set)){   ##### Create seperate dirs for each RegionMat_M
      file.create(FilePath)
 	  
     RegionMat <- regionMatrix(fullCov, cutoff = MCC_Set[c], runfilter = FALSE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
-                        chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl", returnBP=FALSE)
-    
+                        chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl", returnBP = FALSE)
+    # RegioinMat <- map(RegionMat, ~.subset2(.x,1)) ### Saving only 'regions' df
     save(RegionMat, file = FilePath)
     rm(RegionMat)
     gc()
@@ -62,9 +62,8 @@ if (!file.exists(RegionMat_Path_file)){
   }else{
   save(RegionMat_Path, file = RegionMat_Path_file)  
    }
-} else {
-  
 }
+
     ### Step4- Creating the NonOverlappedExons
 
 if (!file.exists(paste0(SavePath, "NonOverlappedExons.RData"))){

@@ -12,9 +12,11 @@ my $MCCRangeLength = @MCCRange;
 my $MRGRangeLength = @MRGRange;
 my $MCC_MRG = $MCCRangeLength * $MRGRangeLength;
 my @MCC_MRG = (1..$MCC_MRG);
+# my $output = `sudo Rscript ./NewRegionsMCCMRG-Deltas.R ; free -h && sudo sysctl -w vm.drop_caches=3 && sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches && free -h`;
 
 foreach(@MCC_MRG){
-system('sudo Rscript ./NewRegionsMCCMRG-Deltas.R ; free -h && sudo sysctl -w vm.drop_caches=3 && sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches && free -h');
+	system('sudo Rscript ./NewRegionsMCCMRG-Deltas.R ; free -h && sudo sysctl -w vm.drop_caches=3 && sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches && free -h');
+	# $output;
 }
 
 #print("$MCC\n");

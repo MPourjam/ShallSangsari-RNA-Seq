@@ -24,7 +24,7 @@ if (str_detect(fullCov_Path,".*.rds$")  & !"fullCov" %in% ls(envir = globalenv()
  load(fullCov_Path)
 }
 } else {
-  stop("There are more than one fulCov files in our working directory(cwd) or /n niehter rds nor RData files was found." )
+  stop("There are more than one fulCov files in our working directory(cwd) or niehter rds nor RData files were found." )
 }
 
 OarSeqinfo <- Seqinfo(seqnames = c(1:26, "X"),
@@ -70,7 +70,9 @@ Breeds <- c("Shall","San")
 # TotalMapped <- as.vector(map_dbl(Coordbamfilespath, getTotalMapped))
 # names(TotalMapped) <- names(bamfileslist)
 
-#  pheno$Samples <- names(bamfileslist)
+# fullCov <- fullCoverage(bamfileslist, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, targetSize = 6e+07, returnMean = TRUE)
+
+# pheno$Samples <- names(bamfileslist)
 
 # # Creating Metadata columns and TxDb Object
 # met <- data.frame( IllSeqSheep = c(paste("LF_San_", rep(1:3,1), sep = "" )
