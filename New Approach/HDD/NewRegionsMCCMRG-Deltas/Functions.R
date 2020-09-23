@@ -174,7 +174,7 @@ if (CalclulateDelta){
   }
 }
 
-NextMCC_MRG <- MCC_MRG_Grid[which(MCC_MRG_Grid[,2] == MRG & MCC_MRG_Grid[1,] == MCC) + 1 , ]
+NextMCC_MRG <- MCC_MRG_Grid[which(MCC_MRG_Grid[[2]] == MRG & MCC_MRG_Grid[[1]] == MCC) + 1 , ]
 
 if (is.na(NextMCC_MRG[1,2])) {
   stop(call. = FALSE, "Out of MCC_MRG_Grid range!")
