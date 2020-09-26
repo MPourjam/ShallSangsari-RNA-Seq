@@ -9,9 +9,39 @@ options(future.globals.onMissing= "ignore")
 
 ### Path
 cwd <- getwd()
-SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary
-fullCov_Path <- list.files(path = dirname(SavePath), pattern = "full(c|C)ov.(RData|rds)$", recursive = TRUE,full.names = TRUE)
+SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary ### R session must be initiated in the folder containing /DB folder
+fullCov_Path <- file.path(paste0(SavePath,"fullCov.RData"))
+if (!file.exists(fullCov_Path)){
+  bamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep") #### Why do we need bamfilespath...
+                              ## in cwd might be anywhere pay attention to addess of bamfilespath
+                              , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
+                              , recursive = TRUE )
+  
+  readsnames <- gsub(".*/(.*)_Aligned.out.bam", "\\1", bamfilespath)
+  names(bamfilespath) <- readsnames
+  
+  Coordbamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep")
+                                   , pattern = "sortedByCoord.out.bam$", full.names = TRUE
+                                  , recursive = TRUE)
+  
+  Coordbamfilespathindex <- paste0(Coordbamfilespath, ".bai")
+  
+  Bamfiles <- map(seq_along(Coordbamfilespath), function(i) {BamFile(file = Coordbamfilespath[i],
+  index = Coordbamfilespathindex[i])})
+  
+  bamfileslist <-  BamFileList(Bamfiles)
+  names(bamfileslist) <- readsnames
+  
+  ### Totalmapped
+  
+  TotalMapped <- as.vector(map_dbl(Coordbamfilespath, getTotalMapped))
+  names(TotalMapped) <- names(bamfileslist)
+  
+  ### fullCov 
 
+  fullCov <- fullCoverage(bamfileslist, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, targetSize = 4e+07, returnMean = TRUE)
+  save(fullCov, file = paste0(SavedData, ls()[which(str_detect(ls(), "^fullCov$"))], ".RData", sep = ""))
+}
 
 ### Variables
 MCC_Set <- c(seq(0.5,20,0.5))
@@ -45,32 +75,6 @@ colnames(pheno) <- c("Breedtrt","Fecuntrt","ThreeGroup","ReadLength")
 rownames(pheno) <- NULL
 
 Breeds <- c("Shall","San")
-
-# bamfilespath <- list.files(path = "/media/animalscience/My Passport/MPourjam/DATA/Analyze/Out/Sheep" #### Why do we need bamfilespath...
-#                             ## in cwd might be anywhere pay attention to addess of bamfilespath
-#                             , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
-#                             , recursive = TRUE )
-
-# readsnames <- gsub(".*/(.*)_Aligned.out.bam", "\\1", bamfilespath)
-#  names(bamfilespath) <- readsnames
-
-# Coordbamfilespath <- list.files(path = "/media/animalscience/My Passport/MPourjam/DATA/Analyze/Out/Sheep"
-#                                  , pattern = "sortedByCoord.out.bam$", full.names = TRUE
-#                                 , recursive = TRUE)
-
-# Coordbamfilespathindex <- paste0(Coordbamfilespath, ".bai")
-
-# Bamfiles <- map(seq_along(Coordbamfilespath), function(i) {BamFile(file = Coordbamfilespath[i],
-# index = Coordbamfilespathindex[i])})
-
-# bamfileslist <-  BamFileList(Bamfiles)
-# names(bamfileslist) <- readsnames
-
-# # Totalmapped
-# TotalMapped <- as.vector(map_dbl(Coordbamfilespath, getTotalMapped))
-# names(TotalMapped) <- names(bamfileslist)
-
-# fullCov <- fullCoverage(bamfileslist, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, targetSize = 6e+07, returnMean = TRUE)
 
 # pheno$Samples <- names(bamfileslist)
 
