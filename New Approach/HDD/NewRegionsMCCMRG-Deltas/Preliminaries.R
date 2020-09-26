@@ -39,7 +39,7 @@ if (!file.exists(fullCov_Path)){
   
   ### fullCov 
 
-  fullCov <- fullCoverage(bamfileslist, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, targetSize = 4e+07, returnMean = TRUE)
+  fullCov <- fullCoverage(bamfileslist, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, targetSize = 4e+07, returnMean = TRUE, runFilter = FALSE)
   save(fullCov, file = paste0(SavedData, ls()[which(str_detect(ls(), "^fullCov$"))], ".RData", sep = ""))
 }
 
