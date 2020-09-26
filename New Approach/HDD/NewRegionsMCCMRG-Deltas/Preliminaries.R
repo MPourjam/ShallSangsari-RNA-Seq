@@ -84,7 +84,7 @@ Breeds <- c("Shall","San")
 #                                     "HF_Shall_2","HF_Shall_3", "LF_Shall_3")))
 # metadata(bamfileslist) <- met
 
-if (!require("TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1")){
+if (!file.exists(paste0(SavePath, "txdb.RData"))){
   txdb <- TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1 <- makeTxDbPackageFromBiomart(taxonomyId = 9940, port = 80, biomart = "ENSEMBL_MART_ENSEMBL"
                                                                                        , host = "www.ensembl.org", dataset = "oaries_gene_ensembl"
                                                                                        , filter = NULL, circ_seqs = "MT", id_prefix="ensembl_", miRBaseBuild = NA
