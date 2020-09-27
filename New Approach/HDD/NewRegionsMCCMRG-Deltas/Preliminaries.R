@@ -7,35 +7,53 @@ options(future.globals.maxSize= 8912896000)
 options(future.globals.onMissing= "ignore")
 
 
+### BAM files
+bamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep") #### Why do we need bamfilespath...
+                            ## in cwd might be anywhere pay attention to addess of bamfilespath
+                            , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
+                            , recursive = TRUE )
+
+readsnames <- gsub(".*/(.*)_Aligned.out.bam", "\\1", bamfilespath)
+names(bamfilespath) <- readsnames
+
+Coordbamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep")
+                                 , pattern = "sortedByCoord.out.bam$", full.names = TRUE
+                                , recursive = TRUE)
+
+Coordbamfilespathindex <- paste0(Coordbamfilespath, ".bai")
+
+Bamfiles <- map(seq_along(Coordbamfilespath), function(i) {BamFile(file = Coordbamfilespath[i],
+index = Coordbamfilespathindex[i])})
+
+bamfileslist <-  BamFileList(Bamfiles)
+names(bamfileslist) <- readsnames
+
+
 ### Path
 cwd <- getwd()
 SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary ### R session must be initiated in the folder containing /DB folder
-fullCov_Path <- file.path(paste0(SavePath,"fullCov.RData"))
+SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData")) ### Path to the RData file which saves tha root path for each samples sets of ERs
+
+if (!file.exists(SavePath_Sample_FilePath)){
+SavePath_Sample <- paste0(SavePath, readsnames[1],"/")
+save(SavePath_Sample, file = SavePath_Sample_FilePath)
+}
+
+bamfileslist_1Samp_Path <- file.path(SavePath,"bamfilelist.RData")
+if (!file.exists(bamfileslist_1Samp_Path)){
+file.create(bamfileslist_1Samp_Path)
+bamfileslist_1Samp <- bamfileslist[[1]]
+save(bamfileslist_1Samp, file = bamfileslist_1Samp_Path)
+} else {
+load(bamfileslist_1Samp_Path)
+}
+
+fullCov_Path <- file.path(paste0(SavePath_Sample,"fullCov.RData"))
 if (!file.exists(fullCov_Path)){
-  bamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep") #### Why do we need bamfilespath...
-                              ## in cwd might be anywhere pay attention to addess of bamfilespath
-                              , pattern = ".Aligned.out.bam", all.files = TRUE, full.names = TRUE
-                              , recursive = TRUE )
-  
-  readsnames <- gsub(".*/(.*)_Aligned.out.bam", "\\1", bamfilespath)
-  names(bamfilespath) <- readsnames
-  
-  Coordbamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep")
-                                   , pattern = "sortedByCoord.out.bam$", full.names = TRUE
-                                  , recursive = TRUE)
-  
-  Coordbamfilespathindex <- paste0(Coordbamfilespath, ".bai")
-  
-  Bamfiles <- map(seq_along(Coordbamfilespath), function(i) {BamFile(file = Coordbamfilespath[i],
-  index = Coordbamfilespathindex[i])})
-  
-  bamfileslist <-  BamFileList(Bamfiles)
-  names(bamfileslist) <- readsnames
   
   ### Totalmapped
   
-  TotalMapped <- as.vector(map_dbl(Coordbamfilespath, getTotalMapped))
-  names(TotalMapped) <- names(bamfileslist)
+  TotalMapped <- getTotalMapped(bamfileslist_1Samp$path)
   
   ### fullCov 
 
@@ -46,7 +64,7 @@ if (!file.exists(fullCov_Path)){
 ### Variables
 MCC_Set <- c(seq(0.5,20,0.5))
 MRG_Set <- c(seq(10,100, 10))
-MCC_MRG_Grid <- expand.grid(MCC_Set,MRG_Set)
+MCC_MRG_Grid <- expand.grid(MCC_Set,MRG_Set, readsnames)
 if (length(fullCov_Path) == 1){
 if (str_detect(fullCov_Path,".*.rds$")  & !"fullCov" %in% ls(envir = globalenv()) ){  ###### What if there are more than one file containing "fullcov" and ".rds
   load(fullCov_Path) #### How is it possible to have fullCov data in a directory which is newly built (SavedData)
