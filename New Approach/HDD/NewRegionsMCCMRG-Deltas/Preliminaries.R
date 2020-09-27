@@ -37,9 +37,11 @@ SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData")) 
 if (!file.exists(SavePath_Sample_FilePath)){
 SavePath_Sample <- paste0(SavePath, readsnames[1],"/")
 save(SavePath_Sample, file = SavePath_Sample_FilePath)
+} else{
+load(SavePath_Sample_FilePath)
 }
 
-bamfileslist_1Samp_Path <- file.path(SavePath,"bamfilelist.RData")
+bamfileslist_1Samp_Path <- file.path(paste0(DBDir_Path,"bamfilelist.RData"))
 if (!file.exists(bamfileslist_1Samp_Path)){
 file.create(bamfileslist_1Samp_Path)
 bamfileslist_1Samp <- bamfileslist[[1]]
@@ -47,6 +49,8 @@ save(bamfileslist_1Samp, file = bamfileslist_1Samp_Path)
 } else {
 load(bamfileslist_1Samp_Path)
 }
+
+currentSample <- readsnames[which(str_detect(bamfileslist_1Samp$path, pattern = readsnames))
 
 fullCov_Path <- file.path(paste0(SavePath_Sample,"fullCov.RData"))
 if (!file.exists(fullCov_Path)){
