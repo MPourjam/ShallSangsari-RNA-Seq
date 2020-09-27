@@ -28,7 +28,7 @@ for (c in seq_along(MCC_Set)){   ##### Create seperate dirs for each RegionMat_M
      dir.create(dirname(FilePath))
      file.create(FilePath)
 	  
-    RegionMat <- regionMatrix(fullCov, cutoff = MCC_Set[c], runfilter = TRUE ,L = c(rep(150,3), rep(100,2),rep(150, 4)),
+    RegionMat <- regionMatrix(fullCov, cutoff = MCC_Set[c], runfilter = TRUE ,L = as.numeric(pheno[pheno[["Samples"]] == currentSample, "ReadLength"]),
                         chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl", returnBP = FALSE)
     # RegioinMat <- map(RegionMat, ~.subset2(.x,1)) ### Saving only 'regions' df
     save(RegionMat, file = FilePath)
