@@ -6,6 +6,7 @@ plan("multisession")
 options(future.globals.maxSize= 8912896000)
 options(future.globals.onMissing= "ignore")
 
+cwd <- getwd()
 
 ### BAM files
 bamfilespath <- list.files(path = paste0(cwd,"/DATA/Analyze/Out/Sheep") #### Why do we need bamfilespath...
@@ -30,7 +31,6 @@ names(bamfileslist) <- readsnames
 
 
 ### Path
-cwd <- getwd()
 SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary ### R session must be initiated in the folder containing /DB folder
 SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData")) ### Path to the RData file which saves tha root path for each samples sets of ERs
 
@@ -41,7 +41,7 @@ save(SavePath_Sample, file = SavePath_Sample_FilePath)
 load(SavePath_Sample_FilePath)
 }
 
-bamfileslist_1Samp_Path <- file.path(paste0(DBDir_Path,"bamfilelist.RData"))
+bamfileslist_1Samp_Path <- file.path(paste0(SavePath,"bamfilelist.RData"))
 if (!file.exists(bamfileslist_1Samp_Path)){
 file.create(bamfileslist_1Samp_Path)
 bamfileslist_1Samp <- bamfileslist[[1]]
@@ -50,7 +50,14 @@ save(bamfileslist_1Samp, file = bamfileslist_1Samp_Path)
 load(bamfileslist_1Samp_Path)
 }
 
-currentSample <- readsnames[which(str_detect(bamfileslist_1Samp$path, pattern = readsnames))
+currentSample <- readsnames[which(str_detect(bamfileslist_1Samp$path, pattern = readsnames))]
+
+for (y in readsnames){
+  if (!any(y %in% list.dirs(SavePath))){
+    dir.create(paste0(SavePath,y), showWarnings = FALSE)      
+  }
+}
+rm(y)
 
 fullCov_Path <- file.path(paste0(SavePath_Sample,"fullCov.RData"))
 if (!file.exists(fullCov_Path)){
@@ -61,8 +68,9 @@ if (!file.exists(fullCov_Path)){
   
   ### fullCov 
 
-  fullCov <- fullCoverage(bamfileslist, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, returnMean = TRUE, runFilter = FALSE) ### leaving targetsize to default
-  save(fullCov, file=fullCov_Path)
+  fullCov <- fullCoverage(bamfileslist_1Samp$path, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, returnMean = TRUE, runFilter = FALSE) ### leaving targetsize to default
+    file.create(fullCov_Path)
+    save(fullCov, file=fullCov_Path)
 }
 
 ### Variables
@@ -90,10 +98,10 @@ ReadLength <- c(rep(150,3), rep(100,2),rep(150, 4))
 Fecuntrt <- c(c(rep("LF",3), "HF",rep("LF",2), rep("HF",2),"LF"))
 Breedtrt <- c(c(rep("San",3), rep("Shall",6)))
 ThreeGroup <- c(rep("San", 3), rep("Shall_OUT",2), rep("Shall",3), "Shall_OUT")
-pheno <- as.data.frame( cbind(Breed = Breedtrt, Fecun = Fecuntrt,
- ThreeGroup = ThreeGroup, ReadLength = ReadLength))
-pheno <-  map_dfc(colnames(pheno), ~ as.factor(pheno[[as.character(.x)]]))
-colnames(pheno) <- c("Breedtrt","Fecuntrt","ThreeGroup","ReadLength")
+pheno <- data.frame(Breed = Breedtrt, Fecun = Fecuntrt,
+                    ThreeGroup = ThreeGroup, ReadLength = ReadLength, Samples = readsnames)
+# pheno <-  map_dfc(colnames(pheno), ~ as.factor(pheno[[as.character(.x)]]))
+colnames(pheno) <- c("Breedtrt","Fecuntrt","ThreeGroup","ReadLength", "Samples")
 rownames(pheno) <- NULL
 
 Breeds <- c("Shall","San")
