@@ -28,17 +28,22 @@ exluding_regions
 }
 
 # This is the core function
-NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, CalclulateDelta = FALSE ) {  
-  stopifnot(file.exists(file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))) 
-  load( file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData"))) ### This will load the variable "RegionMat_Path" containing the path to RegionMat_MCC file
-  stopifnot(file.exists(file.path(paste0(DBDir_Path,"MRG.RData"))))
-  load( file = file.path(paste0(DBDir_Path,"MRG.RData")))### This will load the variable "MRG"        
+NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, currentSample, bamfileslist, CalclulateDelta = FALSE ) {
+  
+  SavePath_Sample <- paste0(SavePath, currentSample,"/")
+  stopifnot(file.exists(file.path(paste0(SavePath_Sample,"RegionMat_Path.RData")))) 
+  load( file = file.path(paste0(SavePath_Sample,"RegionMat_Path.RData"))) ### This will load the variable "RegionMat_Path" containing the path to RegionMat_MCC file
+  stopifnot(file.exists(file.path(paste0(SavePath_Sample,"MRG.RData"))))
+  load( file = file.path(paste0(SavePath_Sample,"MRG.RData")))### This will load the variable "MRG"        
   MRG_RegionSet <- vector(mode = 'list',length = 2)
   if (!"fullCov" %in% ls(envir = globalenv()) ){
     stopifnot(file.exists(fullCov_Path))
     load(file = file.path(fullCov_Path))
   }
-
+  
+  bamfileslist_1Samp_Path <- file.path(paste0(DBDir_Path,"bamfilelist.RData"))
+  stopifnot(file.exists(file.path(paste0(DBDir_Path,"bamfilelist.RData"))))
+  load(bamfileslist_1Samp_Path)
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
   load(file = file.path(RegionMat_Path)) ### This loads RegionMat (13.72 Gb) to the memory
@@ -138,9 +143,9 @@ if (CalclulateDelta){
     if (!file.exists(Deltas_file_path)) {
       warning(paste0("Deltas dataframe file was not found in the following directory: ",
        as.character(DBDir_Path), ". Attemping to create one."), immediate. = TRUE)
-      Deltas_names <- tidyr::unite(MCC_MRG_Grid, "MCC_MRG", sep= "_", remove = TRUE )
+      Deltas_names <- tidyr::unite(MCC_MRG_Grid, "MCC_MRG_Sample", sep= "_", remove = TRUE )
       Deltas <- vector(mode = "list", length = nrow(MCC_MRG_Grid))
-      names(Deltas) <- as.character(Deltas_names[["MCC_MRG"]])
+      names(Deltas) <- as.character(Deltas_names[["MCC_MRG_Sample"]])
 
       ## Filtering for regions loonger than 3bp-long has been done on line 80 (RegionMat_MCC_MRG)
       LaidPairs <- map(seq_len(length(NonOverlappedExons)),
@@ -161,7 +166,7 @@ if (CalclulateDelta){
       names(LaidPairs) <- OarSeqinfo@seqnames 
      gc()
      
-      Deltas[[paste0(as.character(MCC),"_", as.character(MRG))]] <- map_dfr(LaidPairs,
+      Deltas[[paste0(as.character(MCC),"_", as.character(MRG), "_", currentSample)]] <- map_dfr(LaidPairs,
        ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
      # %>% transmute( DeltaVal = abs(first.start - second.start) + abs(first.end - second.end))
       
@@ -179,7 +184,7 @@ if (CalclulateDelta){
   # }
 }
 
-NextMCC_MRG <- MCC_MRG_Grid[which(MCC_MRG_Grid[[2]] == MRG & MCC_MRG_Grid[[1]] == MCC) + 1 , ]
+NextMCC_MRG <- MCC_MRG_Grid[which(MCC_MRG_Grid[[2]] == MRG & MCC_MRG_Grid[[1]] == MCC & MCC_MRG_Grid[[3]] == currentSample) + 1 , ]
 
 if (is.na(NextMCC_MRG[1,2])) {
   stop(call. = FALSE, "Out of MCC_MRG_Grid range!")
@@ -189,7 +194,9 @@ if (is.na(NextMCC_MRG[1,2])) {
  
  RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE),
     pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
-
+  
+bamfileslist_1Samp <- bamfileslist[[which(names(bamfileslist) == NextMCC_MRG[[3]])]]
+  save(bamfileslist_1Samp,bamfileslist_1Samp_Path) 
  if (length(RegionMat_Path) != 1) { 
  #### Because MCC iteration is slower than MRG
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"),
