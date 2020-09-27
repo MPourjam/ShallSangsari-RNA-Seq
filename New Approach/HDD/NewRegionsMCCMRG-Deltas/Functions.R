@@ -177,7 +177,7 @@ if (CalclulateDelta){
       LaidPairs <- map(seq_len(length(NonOverlappedExons)),
         ~findOverlapPairs(granges(RegionMat_MCC_MRG[[.x]][['regions']]),
           granges(NonOverlappedExons[[.x]])), .id = "Chr")
-      Deltas[[paste0(as.character(MCC),"_", as.character(MRG))]] <- map_dfr(LaidPairs,
+      Deltas[[paste0(as.character(MCC),"_", as.character(MRG), "_", currentSample)]] <- map_dfr(LaidPairs,
        ~ tibble(Delta = abs(as_tibble(.x@first)$start - as_tibble(.x@second)$start) + abs(as_tibble(.x@first)$end - as_tibble(.x@second)$end)),.id = "Chr" )
       save(Deltas, file = Deltas_file_path)
     }
@@ -196,17 +196,17 @@ if (is.na(NextMCC_MRG[1,2])) {
     pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
   
 bamfileslist_1Samp <- bamfileslist[[which(names(bamfileslist) == NextMCC_MRG[[3]])]]
-  save(bamfileslist_1Samp,bamfileslist_1Samp_Path)
+ save(bamfileslist_1Samp, file=bamfileslist_1Samp_Path)
   SavePath_Sample <- paste0(SavePath, NextMCC_MRG[[3]],"/")
   SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData"))
-  save(SavePath_Sample, SavePath_Sample_FilePath)
+  save(SavePath_Sample, file = SavePath_Sample_FilePath)
   
  if (length(RegionMat_Path) != 1) { 
  #### Because MCC iteration is slower than MRG
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"),
       " was not found or appears more than once!!!"), call. = FALSE)
   } else{
-  save(RegionMat_Path, file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))
+  save(RegionMat_Path, file = file.path(paste0(SavePath_Sample,"RegionMat_Path.RData")))
     }
   }
 
