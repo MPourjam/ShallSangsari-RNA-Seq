@@ -196,7 +196,11 @@ if (is.na(NextMCC_MRG[1,2])) {
     pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
   
 bamfileslist_1Samp <- bamfileslist[[which(names(bamfileslist) == NextMCC_MRG[[3]])]]
-  save(bamfileslist_1Samp,bamfileslist_1Samp_Path) 
+  save(bamfileslist_1Samp,bamfileslist_1Samp_Path)
+  SavePath_Sample <- paste0(SavePath, NextMCC_MRG[[3]],"/")
+  SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData"))
+  save(SavePath_Sample, SavePath_Sample_FilePath)
+  
  if (length(RegionMat_Path) != 1) { 
  #### Because MCC iteration is slower than MRG
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"),
