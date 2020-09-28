@@ -50,11 +50,23 @@ SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The termina
 # load(bamfileslist_1Samp_Path)
 # }
 
+MCC_Set <- c(seq(0.5,20,0.5))
+MRG_Set <- c(seq(10,100, 10))
+if(!file.exists(paste0(SavePath, "MCC_MRG_Grid.RData"))){
+file.create(paste0(SavePath, "MCC_MRG_Grid.RData"))
+MCC_MRG_Grid <- expand.grid(MCC_Set,MRG_Set, readsnames)
+set.seed(42)
+shuffled_rows <- sample(nrow(MCC_MRG_Grid))
+MCC_MRG_Grid <- MCC_MRG_Grid[shuffled_rows,]
+save(MCC_MRG_Grid, file=paste0(SavePath, "MCC_MRG_Grid.RData"))         
+} else{
+load(paste0(SavePath, "MCC_MRG_Grid.RData"))
+}
+
 currSamp_path <- file.path(paste0(SavePath, "CurrSample.RData"))
 if (!file.exists(currSamp_path)){
 file.create(currSamp_path)
-currentSample <- readsnames[which(str_detect(bamfileslist[[1]]$path, pattern = readsnames))]
-save(currentSample, file=currSamp_path )          
+currentSample <- as.character(MCC_MRG_Grid[[3]][1])
 } else{
 load(currSamp_path) ### This will load "surrentSample" to the memory
 }
@@ -81,18 +93,6 @@ if (!file.exists(fullCov_Path)){
 }
 
 ### Variables
-MCC_Set <- c(seq(0.5,20,0.5))
-MRG_Set <- c(seq(10,100, 10))
-if(!file.exists(paste0(SavePath, "MCC_MRG_Grid.RData"))){
-file.create(paste0(SavePath, "MCC_MRG_Grid.RData"))
-MCC_MRG_Grid <- expand.grid(MCC_Set,MRG_Set, readsnames)
-set.seed(42)
-shuffled_rows <- sample(nrow(MCC_MRG_Grid))
-MCC_MRG_Grid <- MCC_MRG_Grid[shuffled_rows,]
-save(MCC_MRG_Grid, file=paste0(SavePath, "MCC_MRG_Grid.RData"))         
-} else{
-load(paste0(SavePath, "MCC_MRG_Grid.RData"))
-}
 
 if (length(fullCov_Path) == 1){
 if (str_detect(fullCov_Path,".*.rds$")  & !"fullCov" %in% ls(envir = globalenv()) ){  ###### What if there are more than one file containing "fullcov" and ".rds
