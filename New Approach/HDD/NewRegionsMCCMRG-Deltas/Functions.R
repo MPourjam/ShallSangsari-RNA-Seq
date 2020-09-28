@@ -28,22 +28,21 @@ exluding_regions
 }
 
 # This is the core function
-NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, currentSample, bamfileslist, CalclulateDelta = FALSE ) {
+NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, currentSample, CalclulateDelta = FALSE ) {
   
-  SavePath_Sample <- paste0(SavePath, currentSample,"/")
-  stopifnot(file.exists(file.path(paste0(SavePath_Sample,"RegionMat_Path.RData")))) 
-  load( file = file.path(paste0(SavePath_Sample,"RegionMat_Path.RData"))) ### This will load the variable "RegionMat_Path" containing the path to RegionMat_MCC file
-  stopifnot(file.exists(file.path(paste0(SavePath_Sample,"MRG.RData"))))
-  load( file = file.path(paste0(SavePath_Sample,"MRG.RData")))### This will load the variable "MRG"        
+  stopifnot(file.exists(file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))) 
+  load( file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData"))) ### This will load the variable "RegionMat_Path" containing the path to RegionMat_MCC file
+  stopifnot(file.exists(file.path(paste0(DBDir_Path,"MRG.RData"))))
+  load( file = file.path(paste0(DBDir_Path,"MRG.RData")))### This will load the variable "MRG"        
   MRG_RegionSet <- vector(mode = 'list',length = 2)
   if (!"fullCov" %in% ls(envir = globalenv()) ){
     stopifnot(file.exists(fullCov_Path))
     load(file = file.path(fullCov_Path))
   }
   
-  bamfileslist_1Samp_Path <- file.path(paste0(DBDir_Path,"bamfilelist.RData"))
-  stopifnot(file.exists(file.path(paste0(DBDir_Path,"bamfilelist.RData"))))
-  load(bamfileslist_1Samp_Path)
+#   bamfileslist_1Samp_Path <- file.path(paste0(DBDir_Path,"bamfilelist.RData"))
+#   stopifnot(file.exists(file.path(paste0(DBDir_Path,"bamfilelist.RData"))))
+#   load(bamfileslist_1Samp_Path)
   Deltas_file_path <- file.path(paste0(DBDir_Path,"Deltas.RData"))
   SaveDir <- paste0(dirname(RegionMat_Path),"/")
   load(file = file.path(RegionMat_Path)) ### This loads RegionMat (13.72 Gb) to the memory
@@ -192,21 +191,23 @@ if (is.na(NextMCC_MRG[1,2])) {
   MRG <- as.numeric(NextMCC_MRG[1,2])
  save( MRG , file = file.path(paste0(DBDir_Path,"MRG.RData")))
  
- RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE),
+ RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE), ### Subsetting works because all RegionMats_MCC.RData files have been created 
     pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
   
-bamfileslist_1Samp <- bamfileslist[[which(names(bamfileslist) == NextMCC_MRG[[3]])]]
- save(bamfileslist_1Samp, file=bamfileslist_1Samp_Path)
-  SavePath_Sample <- paste0(SavePath, NextMCC_MRG[[3]],"/")
-  SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData"))
-  save(SavePath_Sample, file = SavePath_Sample_FilePath)
+# bamfileslist_1Samp <- bamfileslist[[which(names(bamfileslist) == NextMCC_MRG[[3]])]]
+#  save(bamfileslist_1Samp, file=bamfileslist_1Samp_Path)
+# SavePath_Sample <- paste0(SavePath, NextMCC_MRG[[3]],"/")
+# SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData"))
+# save(SavePath_Sample, file = SavePath_Sample_FilePath)
+currSamp_path <- file.path(paste0(DBDir_Path, "CurrSample.RData"))
+currentSample <- as.character(NextMCC_MRG[[3]][1])
   
  if (length(RegionMat_Path) != 1) { 
  #### Because MCC iteration is slower than MRG
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"),
       " was not found or appears more than once!!!"), call. = FALSE)
   } else{
-  save(RegionMat_Path, file = file.path(paste0(SavePath_Sample,"RegionMat_Path.RData")))
+  save(RegionMat_Path, file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))
     }
   }
 
