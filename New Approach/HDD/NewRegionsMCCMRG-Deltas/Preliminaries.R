@@ -32,25 +32,32 @@ names(bamfileslist) <- readsnames
 
 ### Path
 SavePath <- paste0(cwd,"/DB/") ### This the root of our database ### The terminal '/' is necessary ### R session must be initiated in the folder containing /DB folder
-SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData")) ### Path to the RData file which saves tha root path for each samples sets of ERs
+# SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData")) ### Path to the RData file which saves tha root path for each samples sets of ERs
 
-if (!file.exists(SavePath_Sample_FilePath)){
-SavePath_Sample <- paste0(SavePath, readsnames[1],"/")
-save(SavePath_Sample, file = SavePath_Sample_FilePath)
+# if (!file.exists(SavePath_Sample_FilePath)){
+# SavePath_Sample <- paste0(SavePath, readsnames[1],"/")
+# save(SavePath_Sample, file = SavePath_Sample_FilePath)
+# } else{
+# load(SavePath_Sample_FilePath)
+# }
+
+# bamfileslist_1Samp_Path <- file.path(paste0(SavePath,"bamfilelist.RData"))
+# if (!file.exists(bamfileslist_1Samp_Path)){
+# file.create(bamfileslist_1Samp_Path)
+# bamfileslist_1Samp <- bamfileslist[[1]]
+# save(bamfileslist_1Samp, file = bamfileslist_1Samp_Path)
+# } else {
+# load(bamfileslist_1Samp_Path)
+# }
+
+currSamp_path <- file.path(paste0(SavePath, "CurrSample.RData"))
+if (!file.exists(currSamp_path)){
+file.create(currSamp_path)
+currentSample <- readsnames[which(str_detect(bamfileslist[[1]]$path, pattern = readsnames))]
+save(currentSample, file=currSamp_path )          
 } else{
-load(SavePath_Sample_FilePath)
+load(currSamp_path) ### This will load "surrentSample" to the memory
 }
-
-bamfileslist_1Samp_Path <- file.path(paste0(SavePath,"bamfilelist.RData"))
-if (!file.exists(bamfileslist_1Samp_Path)){
-file.create(bamfileslist_1Samp_Path)
-bamfileslist_1Samp <- bamfileslist[[1]]
-save(bamfileslist_1Samp, file = bamfileslist_1Samp_Path)
-} else {
-load(bamfileslist_1Samp_Path)
-}
-
-currentSample <- readsnames[which(str_detect(bamfileslist_1Samp$path, pattern = readsnames))]
 
 for (y in readsnames){
   if (!any(y %in% list.dirs(SavePath))){
@@ -59,16 +66,16 @@ for (y in readsnames){
 }
 rm(y)
 
-fullCov_Path <- file.path(paste0(SavePath_Sample,"fullCov.RData"))
+fullCov_Path <- file.path(paste0(SavePath, currentSample,"/","fullCov.RData"))
 if (!file.exists(fullCov_Path)){
   
   ### Totalmapped
   
-  TotalMapped <- getTotalMapped(bamfileslist_1Samp$path)
+  TotalMapped <- getTotalMapped(bamfileslist[[currentSample]]$path)
   
   ### fullCov 
 
-  fullCov <- fullCoverage(bamfileslist_1Samp$path, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, returnMean = TRUE, runFilter = FALSE) ### leaving targetsize to default
+  fullCov <- fullCoverage(bamfileslist[[currentSample]]$path, chrs = c(rep(1:26), "X"), totalMapped = TotalMapped, returnMean = TRUE, runFilter = FALSE) ### leaving targetsize to default
     file.create(fullCov_Path)
     save(fullCov, file=fullCov_Path)
 }
@@ -76,7 +83,17 @@ if (!file.exists(fullCov_Path)){
 ### Variables
 MCC_Set <- c(seq(0.5,20,0.5))
 MRG_Set <- c(seq(10,100, 10))
+if(!file.exists(paste0(SavePath, "MCC_MRG_Grid.RData"))){
+file.create(paste0(SavePath, "MCC_MRG_Grid.RData"))
 MCC_MRG_Grid <- expand.grid(MCC_Set,MRG_Set, readsnames)
+set.seed(42)
+shuffled_rows <- sample(nrow(MCC_MRG_Grid))
+MCC_MRG_Grid <- MCC_MRG_Grid[shuffled_rows,]
+save(MCC_MRG_Grid, file=paste0(SavePath, "MCC_MRG_Grid.RData"))         
+} else{
+load(paste0(SavePath, "MCC_MRG_Grid.RData"))
+}
+
 if (length(fullCov_Path) == 1){
 if (str_detect(fullCov_Path,".*.rds$")  & !"fullCov" %in% ls(envir = globalenv()) ){  ###### What if there are more than one file containing "fullcov" and ".rds
   load(fullCov_Path) #### How is it possible to have fullCov data in a directory which is newly built (SavedData)
