@@ -67,6 +67,7 @@ currSamp_path <- file.path(paste0(SavePath, "CurrSample.RData"))
 if (!file.exists(currSamp_path)){
 file.create(currSamp_path)
 currentSample <- as.character(MCC_MRG_Grid[[3]][1])
+save(currentSample, file=currSamp_path)
 } else{
 load(currSamp_path) ### This will load "surrentSample" to the memory
 }
