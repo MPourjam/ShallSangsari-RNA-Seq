@@ -201,7 +201,7 @@ if (is.na(NextMCC_MRG[1,2])) {
 # save(SavePath_Sample, file = SavePath_Sample_FilePath)
 currSamp_path <- file.path(paste0(DBDir_Path, "CurrSample.RData"))
 currentSample <- as.character(NextMCC_MRG[[3]][1])
-  
+save(currentSample,file=currSamp_path)
  if (length(RegionMat_Path) != 1) { 
  #### Because MCC iteration is slower than MRG
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"),
