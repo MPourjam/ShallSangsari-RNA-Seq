@@ -7,11 +7,11 @@ source("Functions.R")
 
 		### Step1- Creating the RegionsMat's folder
 
-if (!"RegionMats" %in% list.dirs(SavePath_Sample, full.names = FALSE)) {
-  dir.create(path = paste0(SavePath_Sample, "RegionMats"))
-  RegionMatsPath <- file.path(paste0(SavePath_Sample, "RegionMats"))#### Caused double "/" in file's path to regionMats
+if (!"RegionMats" %in% list.dirs(paste0(SavePath, currentSample), full.names = FALSE)) {
+  dir.create(path = paste0(paste0(SavePath, currentSample), "RegionMats"))
+  RegionMatsPath <- file.path(paste0(paste0(SavePath, currentSample,"/"), "RegionMats"))#### Caused double "/" in file's path to regionMats
 } else {
-  RegionMatsPath <- file.path(paste0(SavePath_Sample, "RegionMats"))
+  RegionMatsPath <- file.path(paste0(paste0(SavePath, currentSample, "/"), "RegionMats"))
 }
 
 
@@ -43,8 +43,8 @@ rm(c)
 
 		### Step3- Initializing  MRG.RData and RegionMat_Path.RData
 
-MRGfile_Path <- file.path(paste0(SavePath_Sample,"MRG.RData"))
-RegionMat_Path_file <- file.path(paste0(SavePath_Sample,"RegionMat_Path.RData"))
+MRGfile_Path <- file.path(paste0(SavePath,"MRG.RData"))
+RegionMat_Path_file <- file.path(paste0(SavePath,"RegionMat_Path.RData"))
 
 if (!file.exists(MRGfile_Path)){
   file.create(MRGfile_Path)
@@ -86,4 +86,4 @@ load(file.path(paste0(SavePath, "NonOverlappedExons.RData")))
     ### Step5- Performing the core function, creating the new regions and Deltas
 
 # Examine the load and save behaviour
-NewRegions( MCC_MRG_Grid = MCC_MRG_Grid, fullCov_Path = fullCov_Path, DBDir_Path=SavePath, currentSample, bamfileslist, CalclulateDelta = TRUE)
+NewRegions( MCC_MRG_Grid = MCC_MRG_Grid, fullCov_Path = fullCov_Path, DBDir_Path=SavePath, currentSample, CalclulateDelta = TRUE)
