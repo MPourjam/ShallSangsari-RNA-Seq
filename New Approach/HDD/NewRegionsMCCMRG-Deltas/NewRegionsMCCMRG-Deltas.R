@@ -8,7 +8,7 @@ source("Functions.R")
 		### Step1- Creating the RegionsMat's folder
 
 if (!"RegionMats" %in% list.dirs(paste0(SavePath, currentSample), full.names = FALSE)) {
-  dir.create(path = paste0(paste0(SavePath, currentSample), "RegionMats"))
+  dir.create(path = paste0(paste0(SavePath, currentSample,"/"), "RegionMats"))
   RegionMatsPath <- file.path(paste0(paste0(SavePath, currentSample,"/"), "RegionMats"))#### Caused double "/" in file's path to regionMats
 } else {
   RegionMatsPath <- file.path(paste0(paste0(SavePath, currentSample, "/"), "RegionMats"))
