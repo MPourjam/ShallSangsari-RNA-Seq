@@ -145,8 +145,8 @@ if (!file.exists(paste0(SavePath, "txdb.RData"))){
   keepSeqlevels(TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1::TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1,c(1:26, "X"))
   save(txdb, file = paste0(SavePath, "txdb.RData"))
 } else {
-  keepSeqlevels(TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1::TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1,c(1:26, "X"))
   load(file = paste0(SavePath, "txdb.RData"))
+  keepSeqlevels(TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1::TxDb.Oaries.BioMart.ENSEMBLMARTENSEMBL.Oarv3.1,c(1:26, "X"))
 }
 
 if (file.exists(file.path(paste0(SavePath,"genomicState.RData")))){
