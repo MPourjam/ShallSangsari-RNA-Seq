@@ -60,7 +60,7 @@ if (!file.exists(RegionMat_Path_file)){
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(MCC_MRG_Grid[1,1]),".RData"),
       " was not found or appears more than once!!!"), call. = FALSE)
   }else{
-  load(RegionMat_Path_file)  
+  save(RegionMat_Path, file = RegionMat_Path_file) ## It is saved and then loaded immediately by NewRegion() and at the end of iteration updated
    }
 }
 
