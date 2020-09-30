@@ -39,7 +39,6 @@ NewRegions <- function(MCC_MRG_Grid, fullCov_Path, DBDir_Path, currentSample, Ca
     stopifnot(file.exists(fullCov_Path))
     load(file = file.path(fullCov_Path))
   }
-  
 #   bamfileslist_1Samp_Path <- file.path(paste0(DBDir_Path,"bamfilelist.RData"))
 #   stopifnot(file.exists(file.path(paste0(DBDir_Path,"bamfilelist.RData"))))
 #   load(bamfileslist_1Samp_Path)
@@ -185,23 +184,24 @@ if (CalclulateDelta){
 
 NextMCC_MRG <- MCC_MRG_Grid[which(MCC_MRG_Grid[[2]] == MRG & MCC_MRG_Grid[[1]] == MCC & MCC_MRG_Grid[[3]] == currentSample) + 1 , ]
 
+# Updating MRG
 if (is.na(NextMCC_MRG[1,2])) {
   stop(call. = FALSE, "Out of MCC_MRG_Grid range!")
 } else {
   MRG <- as.numeric(NextMCC_MRG[1,2])
  save( MRG , file = file.path(paste0(DBDir_Path,"MRG.RData")))
- 
- RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE), ### Subsetting works because all RegionMats_MCC.RData files have been created 
-    pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
-  
-# bamfileslist_1Samp <- bamfileslist[[which(names(bamfileslist) == NextMCC_MRG[[3]])]]
-#  save(bamfileslist_1Samp, file=bamfileslist_1Samp_Path)
-# SavePath_Sample <- paste0(SavePath, NextMCC_MRG[[3]],"/")
-# SavePath_Sample_FilePath <- file.path(paste0(SavePath,"SavePath_Sample.RData"))
-# save(SavePath_Sample, file = SavePath_Sample_FilePath)
+
+# Updating currentSample 
 currSamp_path <- file.path(paste0(DBDir_Path, "CurrSample.RData"))
 currentSample <- as.character(NextMCC_MRG[[3]][1])
 save(currentSample,file=currSamp_path)
+
+# Updating RegionMat_Pah
+RegionMatsPath <- file.path(paste0(paste0(DBDir_Path, currentSample, "/"), "RegionMats"))
+RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE), ### Subsetting works because all RegionMats_MCC.RData files have been created 
+    pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
+save(RegionMat_Path, file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))
+
  if (length(RegionMat_Path) != 1) { 
  #### Because MCC iteration is slower than MRG
     stop(paste0(" The initial ", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"),
