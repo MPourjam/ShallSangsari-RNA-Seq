@@ -198,8 +198,8 @@ save(currentSample,file=currSamp_path)
 
 # Updating RegionMat_Pah
 RegionMatsPath <- file.path(paste0(paste0(DBDir_Path, currentSample, "/"), "RegionMats"))
-RegionMat_Path <- stringr::str_subset(list.files(RegionMatsPath, recursive=TRUE, full.names=TRUE), ### Subsetting works because all RegionMats_MCC.RData files have been created 
-    pattern = paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1]),".RData"))
+RegionMat_Path <- file.path(paste0(RegionMatsPath, "/", paste0("RegionMats_",as.numeric(NextMCC_MRG[1,1])),
+                                   "/", paste0("RegionMats_", as.numeric(NextMCC_MRG[1,1]),".RData")))
 save(RegionMat_Path, file = file.path(paste0(DBDir_Path,"RegionMat_Path.RData")))
 
  if (length(RegionMat_Path) != 1) { 
