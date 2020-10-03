@@ -19,7 +19,7 @@ my @MCC_MRG = (1..$MCC_MRG);
 
 foreach(@MCC_MRG){
 	system('sudo Rscript ./NewRegionsMCCMRG-Deltas.R ; free -h && sudo sysctl -w vm.drop_caches=3 && sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches && free -h');
-	# $output;
+	print "\n\n*****************************\n\n Iteration: $_ is completed. \n\n*****************************\n";
 }
 
 #print("$MCC\n");
