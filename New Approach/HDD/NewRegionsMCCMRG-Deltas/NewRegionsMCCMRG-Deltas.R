@@ -26,16 +26,16 @@ for (c in seq_along(MCC_Set)){   ##### Create seperate dirs for each RegionMat_M
      paste("RegionMats", MCC_Set[c], sep = "_"),"/"), paste("RegionMats", MCC_Set[c], sep = "_")), ".RData"))
      
      dir.create(dirname(FilePath))
-     file.create(FilePath)
 	  
     RegionMat <- regionMatrix(fullCov, cutoff = MCC_Set[c], runfilter = TRUE ,L = as.numeric(pheno[pheno[["Samples"]] == currentSample, "ReadLength"]),
                         chrsStyle = "Ensembl", species = "ovis_aries", currentStyle = "Ensembl", returnBP = FALSE)
     # RegioinMat <- map(RegionMat, ~.subset2(.x,1)) ### Saving only 'regions' df
+	 
+    file.create(FilePath) ### 
     save(RegionMat, file = FilePath)
     rm(RegionMat)
     gc()
-    print(paste0("RegionMats data of cutoff value: ", MCC_Set[c], " and mean filter policy has been saved to ",
-      file.path(paste0(paste0(RegionMatsPath, paste("RegionMats", MCC_Set[c], sep = "_")), ".RData"))))
+    print(paste0("RegionMats data of cutoff value: ", MCC_Set[12], " and 'one' filter policy has been saved to ", FilePath))
   }
 }
 rm(c)
